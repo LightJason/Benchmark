@@ -3,16 +3,27 @@
 
 
 +!main <-
-    generic/print( "initial plan" );
-
-    NumberData = 1;
-    StringData = "FooBar";
-
-    message/send( "Default 0", NumberData, StringData );
-    message/broadcast( "regular expression of agent names", NumberData, StringData )
+    !counting( Upperbound )
 .    
 
++!couting(X)
+    : X > 0 <-
+        X--;
+        !counting(X)
+    : X == 0 <-
+        !sendtoken
+        
+.
 
-+!message/receive( message(M), from(F) ) <-
-    generic/print( "receive message", M, "from", F )
++!sendtoken
+    : >>nexttoken <-
+        NextIndex = MyIndex + 1;
+        message/send( NextIndex, "finish" )
+    : !>>nexttoken <-
+        !sendtoken
+.            
+
++!message/receive( message(M), from(F) ) 
+    : (M == "finish") && ( F == MyIndex-1 ) <-
+        +nexttoken
 .    
