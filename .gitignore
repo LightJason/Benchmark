@@ -6,4 +6,6 @@
 !*.java
 !*.asl
 
+!src/checkstyle/*.xml
+
 target/**
