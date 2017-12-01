@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
  */
 public enum EGenerator
 {
-    DEFAULT;
+    BENCHMARK;
 
     /**
      * creates a generator instance
@@ -36,7 +36,7 @@ public enum EGenerator
     {
         switch ( this )
         {
-            case DEFAULT : return new CDefaultAgent.CGenerator( p_stream, p_defaultaction, p_environment, p_agents );
+            case BENCHMARK : return new CBenchmarkAgent.CGenerator( p_stream, p_defaultaction, p_environment, p_agents );
 
             default :
                 throw new RuntimeException( MessageFormat.format( "generator [{0}] not exists", this ) );

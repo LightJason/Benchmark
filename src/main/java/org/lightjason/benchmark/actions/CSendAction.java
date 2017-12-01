@@ -1,6 +1,6 @@
 package org.lightjason.benchmark.actions;
 
-import org.lightjason.benchmark.agents.IEnvironmentAgent;
+import org.lightjason.benchmark.agents.IBenchmarkAgent;
 
 import org.lightjason.agentspeak.action.IBaseAction;
 import org.lightjason.agentspeak.agent.IAgent;
@@ -19,7 +19,6 @@ import org.lightjason.agentspeak.language.instantiable.plan.trigger.ITrigger;
 import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 
@@ -38,16 +37,16 @@ public final class CSendAction extends IBaseAction
      */
     private static final IPath NAME = CPath.from( "message/send" );
     /**
-     * map with agent names and agent objects
+     * list agent objects
      */
-    private final Map<String, IAgent<?>> m_agents;
+    private final List<IAgent<?>> m_agents;
 
     /**
      * constructor
      *
-     * @param p_agents map with agent names and objects
+     * @param p_agents list agent
      */
-    public CSendAction( @Nonnull final Map<String, IAgent<?>> p_agents )
+    public CSendAction( @Nonnull final List<IAgent<?>> p_agents )
     {
         m_agents = p_agents;
     }
@@ -75,11 +74,8 @@ public final class CSendAction extends IBaseAction
         if ( l_arguments.size() < 2 )
             return CFuzzyValue.from( false );
 
-        final IAgent<?> l_receiver = m_agents.get( l_arguments.get( 0 ).<String>raw() );
-        if ( l_receiver == null )
-            return CFuzzyValue.from( false );
-
-        final ITerm l_sender = CLiteral.from( "from", CRawTerm.from( p_context.agent().<IEnvironmentAgent<?>>raw().name() ) );
+        final IAgent<?> l_receiver = m_agents.get( l_arguments.get( 0 ).<Number>raw().intValue() % m_agents.size() );
+        final ITerm l_sender = CLiteral.from( "from", CRawTerm.from( p_context.agent().<IBenchmarkAgent<?>>raw().name() ) );
         l_arguments.stream()
                    .skip( 1 )
                    .map( ITerm::raw )

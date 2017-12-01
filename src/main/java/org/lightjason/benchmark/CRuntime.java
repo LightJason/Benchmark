@@ -61,7 +61,7 @@ public final class CRuntime
     private static boolean createasl()
     {
         Stream.of(
-            "DefaultAgent.asl"
+            "BenchmarkAgent.asl"
         ).forEach( i ->
         {
             try
@@ -114,17 +114,13 @@ public final class CRuntime
     private static Collection<IAgent<?>> initialize( final CommandLine p_cli )
     {
         // runtime agent collection
-        final Map<String, IAgent<?>> l_agents = new ConcurrentHashMap<>();
-
-        // generate envrionment and agents
-        final IEnvironment l_environment = EEnvironment.from( p_cli.getOptionValue( "env", "default" ) ).generate();
+        final List<IAgent<?>> l_agents = Collections.synchronizedList( new ArrayList<>() );
 
         // global set with all possible agent actions
         final Set<IAction> l_actions = Collections.unmodifiableSet(
                 Stream.concat(
                         Stream.of(
-                                new CSendAction( l_agents ),
-                                new CBroadcastAction( l_agents )
+                                new CSendAction( l_agents )
                         ),
                         CCommon.actionsFromPackage()
                 ).collect( Collectors.toSet() )
@@ -162,7 +158,7 @@ public final class CRuntime
                                     final FileInputStream l_stream = new FileInputStream( i.getValue() );
                             )
                     {
-                        return i.getKey().generate( l_stream, l_environment, l_actions.stream(), l_agents );
+                        return i.getKey().generate( l_stream, l_actions.stream(), l_agents );
                     }
                     catch ( final Exception l_exception )
                     {
