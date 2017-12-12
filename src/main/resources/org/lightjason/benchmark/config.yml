@@ -1,0 +1,11 @@
+agents:
+    foo.asl: 100
+    blub.as: 100
+
+agentvariables:
+    count: 5
+
+szenario:
+    runs: 100
+    warmup: 10
+    agentincrement: 5

@@ -5,7 +5,7 @@
 !pom.xml
 !*.md
 !*.java
-!src/resources/**/*.yml
+!src/main/resources/**/*.yml
 
 !src/analysis/**/*.xml
 !src/analysis/**/*.txt
