@@ -23,35 +23,11 @@
 
 package org.lightjason.benchmark;
 
-import com.codepoetics.protonpack.StreamUtils;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Options;
-import org.lightjason.agentspeak.action.IAction;
 import org.lightjason.agentspeak.agent.IAgent;
-import org.lightjason.agentspeak.common.CCommon;
-import org.lightjason.benchmark.actions.CSendAction;
-import org.lightjason.benchmark.agents.EGenerator;
-import org.lightjason.benchmark.environment.EEnvironment;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
-import java.text.MessageFormat;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.LogManager;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -59,7 +35,7 @@ import java.util.stream.Stream;
 /**
  * main application with runtime
  */
-public final class CRuntime
+public final class CMain
 {
 
     static
@@ -72,37 +48,9 @@ public final class CRuntime
     /**
      * private constructor to avoid any instantiation
      */
-    private CRuntime()
+    private CMain()
     {}
 
-
-    // === main ================================================================================================================================================
-
-    /**
-     * creates built-in ASL files
-     *
-     * @return execution flag
-     */
-    private static boolean createasl()
-    {
-        Stream.of(
-            "BenchmarkAgent.asl"
-        ).forEach( i ->
-        {
-            try
-            {
-                Files.copy(
-                    CRuntime.class.getResourceAsStream( i ), FileSystems.getDefault().getPath( i ), StandardCopyOption.REPLACE_EXISTING
-                );
-            }
-            catch ( final IOException l_exception )
-            {
-                l_exception.printStackTrace();
-            }
-        } );
-
-        return true;
-    }
 
     /**
      * main method
@@ -111,31 +59,17 @@ public final class CRuntime
      */
     public static void main( final String[] p_args )
     {
-        final CommandLine l_cli = CRuntime.parsearguments( p_args );
-        if ( l_cli == null )
-            System.exit( -1 );
 
-        // creates agents ASL files
-        if ( l_cli.hasOption( "create" ) && ( CRuntime.createasl() ) )
-            System.exit( 0 );
-
-
-        // execute simulation
-        CRuntime.execute(
-            CRuntime.initialize( l_cli ),
-            l_cli.hasOption( "steps" ) ? Integer.parseInt( l_cli.getOptionValue( "steps" ) ) : Integer.MAX_VALUE,
-            l_cli.hasOption( "sequential" )
-        );
     }
 
-    /**
+    /*
      * initialize the simulation structure, generate data-structure
      * for all agents with name, environment, actions and return
      * collection with agents for execution
      *
      * @param p_cli command-line parameter
      * @return collection with agents for execution
-     */
+     *
     private static Collection<IAgent<?>> initialize( final CommandLine p_cli )
     {
         // runtime agent collection
@@ -204,7 +138,7 @@ public final class CRuntime
 
         return l_agents.values();
     }
-
+    */
 
     // === runtime execution ===================================================================================================================================
 
@@ -224,7 +158,7 @@ public final class CRuntime
         }
 
         IntStream.range( 0, p_steps )
-                .forEach( i -> CRuntime.optionalparallelstream( p_agents.stream(), p_parallel ).forEach( CRuntime::execute ) );
+                .forEach( i -> CMain.optionalparallelstream( p_agents.stream(), p_parallel ).forEach( CMain::execute ) );
     }
 
     /**
@@ -257,45 +191,4 @@ public final class CRuntime
         }
     }
 
-
-    // === command-line parsing ================================================================================================================================
-
-    /**
-     * parsing command-line arguments
-     */
-    private static CommandLine parsearguments( final String[] p_args )
-    {
-        // --- define CLI options ------------------------------------------------------------------------------------------------------------------------------
-        final Options l_clioptions = new Options();
-
-        l_clioptions.addOption( "help", false, "shows this information" );
-        l_clioptions.addOption( "create", false, "creates within the current directory the agent ASL files" );
-        l_clioptions.addOption( "sequential", false, "agents run in sequential order [default value: parallel]" );
-        l_clioptions.addOption( "env", true, MessageFormat.format( "environment definition [default value: default, elements: {0}]", EEnvironment.list() ) );
-        l_clioptions.addOption( "asl", true, "comma-sparated list of ASL files" );
-        l_clioptions.addOption( "agents", true, "comma-sparated list of generating agent numbers (equal to asl-flag)" );
-        l_clioptions.addOption( "generator", true, MessageFormat.format( "comma-separated list of generator names [elements: {0}]", EGenerator.list() ) );
-        l_clioptions.addOption( "steps", true, "number of simulation steps [default: integer maximum]" );
-
-
-        // --- process CLI arguments and initialize configuration ----------------------------------------------------------------------------------------------
-        final CommandLine l_cli;
-        try
-        {
-            l_cli = new DefaultParser().parse( l_clioptions, p_args );
-        }
-        catch ( final Exception l_exception )
-        {
-            System.err.println( "command-line arguments parsing error" );
-            return null;
-        }
-
-        if ( l_cli.hasOption( "help" ) )
-        {
-            new HelpFormatter().printHelp( new java.io.File( CRuntime.class.getProtectionDomain().getCodeSource().getLocation().getPath() ).getName(), l_clioptions );
-            System.exit( 0 );
-        }
-
-        return l_cli;
-    }
 }

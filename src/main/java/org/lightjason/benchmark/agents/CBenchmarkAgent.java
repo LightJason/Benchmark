@@ -47,21 +47,23 @@ public final class CBenchmarkAgent extends IBenchmarkAgent<CBenchmarkAgent>
      * serial id
      */
     private static final long serialVersionUID = 1L;
+
+
     /**
      * constructor
      *
      * @param p_configuration agent configuration
      * @param p_index index of the agent
      */
-    private CBenchmarkAgent(@Nonnull final IAgentConfiguration<CBenchmarkAgent> p_configuration,
-                            @Nonnegative int p_index )
+    private CBenchmarkAgent( @Nonnull final IAgentConfiguration<CBenchmarkAgent> p_configuration,
+                             @Nonnegative int p_index )
     {
         super( p_configuration, p_index );
     }
 
 
 
-        /**
+    /**
      * generator of a specified type of agents
      */
     public static final class CGenerator extends IGenerator<CBenchmarkAgent>
@@ -89,7 +91,7 @@ public final class CBenchmarkAgent extends IBenchmarkAgent<CBenchmarkAgent>
 
         @Nullable
         @Override
-        public final CBenchmarkAgent generatesingle(@Nullable final Object... p_data )
+        public final CBenchmarkAgent generatesingle( @Nullable final Object... p_data )
         {
             /*
             return this.initializeagent(
