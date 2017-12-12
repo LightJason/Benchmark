@@ -21,17 +21,23 @@
  * @endcond
  */
 
-package org.lightjason.benchmark.scenario;
+package org.lightjason.benchmark.runtime;
 
-import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 
-import java.util.function.Supplier;
+import org.lightjason.benchmark.scenario.IScenario;
 
 
 /**
- * interface of an benchmarking scenario
+ * synchronized step-based execution
  */
-public interface IScenario extends Runnable, Supplier<SummaryStatistics>
+public final class CSynchronize implements IRuntime
 {
+    @Override
+    public final void accept( final IScenario p_scenario )
+    {
 
+
+
+
+    }
 }

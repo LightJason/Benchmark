@@ -21,18 +21,47 @@
  * @endcond
  */
 
-package org.lightjason.benchmark.scenario;
+package org.lightjason.benchmark.runtime;
+
+import org.lightjason.benchmark.scenario.IScenario;
+
+import javax.annotation.Nonnull;
+import java.util.Locale;
 
 
 /**
- * synchronized scenario definition
+ * runtime
  */
-public final class CSynchronizedScenario implements IScenario
+public enum ERuntime implements IRuntime
 {
+    SYNCHRONIZED( new CSynchronize() ),
+    ASYNCHRONIZED( new CAsychronize() );
+
+    /**
+     * runtime instance
+     */
+    private final IRuntime m_runtime;
+
+    ERuntime( final IRuntime p_runtime )
+    {
+        m_runtime = p_runtime;
+    }
 
     @Override
-    public void run()
+    public void accept( final IScenario p_scenario )
     {
-
+        m_runtime.accept( p_scenario );
     }
+
+    /**
+     * returns runtime instance of string value
+     *
+     * @param p_name name
+     * @return runtime instance
+     */
+    public static IRuntime from( @Nonnull final String p_name )
+    {
+        return ERuntime.valueOf( p_name.toUpperCase( Locale.ROOT ) );
+    }
+
 }

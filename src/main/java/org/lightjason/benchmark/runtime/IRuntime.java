@@ -21,16 +21,16 @@
  * @endcond
  */
 
-package org.lightjason.benchmark.scenario;
+package org.lightjason.benchmark.runtime;
+
+import org.lightjason.benchmark.scenario.IScenario;
+
+import java.util.function.Consumer;
+
 
 /**
- * asynchronized scenario
+ * runtime interface
  */
-public final class CAnsychronizedScneario implements IScenario
+public interface IRuntime extends Consumer<IScenario>
 {
-    @Override
-    public void run()
-    {
-
-    }
 }

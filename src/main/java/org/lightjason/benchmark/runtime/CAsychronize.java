@@ -21,12 +21,19 @@
  * @endcond
  */
 
-package org.lightjason.benchmark;
+package org.lightjason.benchmark.runtime;
+
+import org.lightjason.benchmark.scenario.IScenario;
+
 
 /**
- * runtime
+ * asychronized execution
  */
-public enum ERuntime
+public final class CAsychronize implements IRuntime
 {
-    INTERFACE;
+    @Override
+    public final void accept( final IScenario p_iScenario )
+    {
+
+    }
 }

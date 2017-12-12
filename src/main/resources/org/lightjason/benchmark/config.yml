@@ -1,12 +1,13 @@
-agents:
-    foo.asl: 100
-    blub.as: 100
-
-agentvariables:
-    count: 5
-
-szenario:
-    runs: 100
+runtime:
     warmup: 10
-    type: "asynchronized"
     agentincrement: 5
+    type: "asynchronized"
+
+agent:
+    constant:
+        count: 5
+
+    source:
+        foo.asl: 100
+        blub.as: 100
+
