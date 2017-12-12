@@ -62,7 +62,7 @@ public abstract class IBenchmarkAgent<T extends IBenchmarkAgent<?>> extends IBas
      * @param p_configuration agent configuration
      * @param p_index index of the agent
      */
-    protected IBenchmarkAgent(@Nonnull final IAgentConfiguration<T> p_configuration, @Nonnegative final int p_index )
+    protected IBenchmarkAgent( @Nonnull final IAgentConfiguration<T> p_configuration, @Nonnegative final int p_index )
     {
         super( p_configuration );
         m_index = p_index;
@@ -88,7 +88,7 @@ public abstract class IBenchmarkAgent<T extends IBenchmarkAgent<?>> extends IBas
     @Override
     public final boolean equals( final Object p_object )
     {
-        return ( p_object != null ) && ( p_object instanceof IBenchmarkAgent<?>) && ( p_object.hashCode() == this.hashCode() );
+        return ( p_object != null ) && ( p_object instanceof IBenchmarkAgent<?> ) && ( p_object.hashCode() == this.hashCode() );
     }
 
 
