@@ -21,53 +21,32 @@
  * @endcond
  */
 
-package org.lightjason.benchmark.actions;
+package org.lightjason.benchmark.agent;
 
-import org.lightjason.agentspeak.action.IBaseAction;
-import org.lightjason.agentspeak.language.instantiable.plan.trigger.CTrigger;
-import org.lightjason.agentspeak.language.instantiable.plan.trigger.ITrigger;
-import org.lightjason.benchmark.agent.IBenchmarkAgent;
+import org.lightjason.agentspeak.agent.IAgent;
 
-import java.util.List;
+import javax.annotation.Nonnegative;
 
 
 /**
- * communication class
+ * interface of an benchmarking agent
  */
-public abstract class ICommunication extends IBaseAction
+public interface IBenchmarkAgent extends IAgent<IBenchmarkAgent>
 {
-    /**
-     * receive literal functor
-     */
-    protected static final String RECEIVEFUNCTOR = "message/receive";
-    /**
-     * message literal functor
-     */
-    protected static final String MESSAGEFUNCTOR = "message";
-    /**
-     * from literal functor
-     */
-    protected static final String FROMFUNCTOR = "from";
-    /**
-     * receive trigger
-     */
-    protected static final ITrigger.EType RECEIVETRIGGER = CTrigger.EType.ADDGOAL;
-    /**
-     * serial id
-     */
-    private static final long serialVersionUID = 1104268283747211370L;
-    /**
-     * list agent objects
-     */
-    protected final List<IBenchmarkAgent> m_agents;
 
     /**
-     * ctor
+     * check if the agent ist active
      *
-     * @param p_agents agents
+     * @return active flag
      */
-    protected ICommunication( final List<IBenchmarkAgent> p_agents )
-    {
-        m_agents = p_agents;
-    }
+    boolean active();
+
+    /**
+     * returns the agent index
+     *
+     * @return agent index
+     */
+    @Nonnegative
+    int index();
+
 }

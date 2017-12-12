@@ -23,7 +23,6 @@
 
 package org.lightjason.benchmark.actions;
 
-import org.lightjason.agentspeak.agent.IAgent;
 import org.lightjason.agentspeak.common.CPath;
 import org.lightjason.agentspeak.common.IPath;
 import org.lightjason.agentspeak.language.CCommon;
@@ -35,7 +34,7 @@ import org.lightjason.agentspeak.language.fuzzy.CFuzzyValue;
 import org.lightjason.agentspeak.language.fuzzy.IFuzzyValue;
 import org.lightjason.agentspeak.language.instantiable.plan.trigger.CTrigger;
 import org.lightjason.agentspeak.language.instantiable.plan.trigger.ITrigger;
-import org.lightjason.benchmark.agents.IBenchmarkAgent;
+import org.lightjason.benchmark.agent.IBenchmarkAgent;
 
 import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
@@ -64,7 +63,7 @@ public final class CBroadcastAction extends ICommunication
      *
      * @param p_agents agents
      */
-    protected CBroadcastAction( final List<IAgent<?>> p_agents )
+    protected CBroadcastAction( final List<IBenchmarkAgent> p_agents )
     {
         super( p_agents );
     }
@@ -89,7 +88,7 @@ public final class CBroadcastAction extends ICommunication
                                                @Nonnull final List<ITerm> p_argument, @Nonnull final List<ITerm> p_return )
     {
         final List<ITerm> l_arguments = CCommon.flatten( p_argument ).collect( Collectors.toList() );
-        final ITerm l_sender = CLiteral.from( FROMFUNCTOR, CRawTerm.from( p_context.agent().<IBenchmarkAgent<?>>raw().index() ) );
+        final ITerm l_sender = CLiteral.from( FROMFUNCTOR, CRawTerm.from( p_context.agent().<IBenchmarkAgent>raw().index() ) );
         final List<ITrigger> l_trigger = l_arguments.parallelStream()
                                                     .map( ITerm::raw )
                                                     .map( CRawTerm::from )

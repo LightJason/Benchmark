@@ -21,10 +21,9 @@
  * @endcond
  */
 
-package org.lightjason.benchmark.agents;
+package org.lightjason.benchmark.agent;
 
 import org.lightjason.agentspeak.action.IAction;
-import org.lightjason.agentspeak.agent.IAgent;
 import org.lightjason.agentspeak.common.CCommon;
 import org.lightjason.agentspeak.configuration.IAgentConfiguration;
 import org.lightjason.agentspeak.language.execution.IVariableBuilder;
@@ -41,7 +40,7 @@ import java.util.stream.Stream;
  * a type of agent
  */
 
-public final class CBenchmarkAgent extends IBenchmarkAgent<CBenchmarkAgent>
+public final class CBenchmarkAgent extends IBaseBenchmarkAgent
 {
     /**
      * serial id
@@ -55,7 +54,7 @@ public final class CBenchmarkAgent extends IBenchmarkAgent<CBenchmarkAgent>
      * @param p_configuration agent configuration
      * @param p_index index of the agent
      */
-    private CBenchmarkAgent( @Nonnull final IAgentConfiguration<CBenchmarkAgent> p_configuration,
+    private CBenchmarkAgent( @Nonnull final IAgentConfiguration<IBenchmarkAgent> p_configuration,
                              @Nonnegative int p_index )
     {
         super( p_configuration, p_index );
@@ -66,7 +65,7 @@ public final class CBenchmarkAgent extends IBenchmarkAgent<CBenchmarkAgent>
     /**
      * generator of a specified type of agents
      */
-    public static final class CGenerator extends IGenerator<CBenchmarkAgent>
+    public static final class CGenerator extends IGenerator
     {
 
         /**
@@ -79,7 +78,7 @@ public final class CBenchmarkAgent extends IBenchmarkAgent<CBenchmarkAgent>
          */
         public CGenerator( @Nonnull final InputStream p_stream, @Nonnull final Stream<IAction> p_defaultaction,
                            @Nonnull final IVariableBuilder p_variablebuilder,
-                           @Nonnull final List<IAgent<?>> p_agents ) throws Exception
+                           @Nonnull final List<IBenchmarkAgent> p_agents ) throws Exception
         {
             super(
                     p_stream,
@@ -91,7 +90,7 @@ public final class CBenchmarkAgent extends IBenchmarkAgent<CBenchmarkAgent>
 
         @Nullable
         @Override
-        public final CBenchmarkAgent generatesingle( @Nullable final Object... p_data )
+        public final IBenchmarkAgent generatesingle( @Nullable final Object... p_data )
         {
             /*
             return this.initializeagent(
