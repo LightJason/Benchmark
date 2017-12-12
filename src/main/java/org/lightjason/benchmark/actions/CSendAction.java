@@ -1,6 +1,27 @@
-package org.lightjason.benchmark.actions;
+/*
+ * @cond LICENSE
+ * ######################################################################################
+ * # LGPL License                                                                       #
+ * #                                                                                    #
+ * # This file is part of the LightJason AgentSpeak(L++) Benchmark                      #
+ * # Copyright (c) 2017, LightJason (info@lightjason.org)                               #
+ * # This program is free software: you can redistribute it and/or modify               #
+ * # it under the terms of the GNU Lesser General Public License as                     #
+ * # published by the Free Software Foundation, either version 3 of the                 #
+ * # License, or (at your option) any later version.                                    #
+ * #                                                                                    #
+ * # This program is distributed in the hope that it will be useful,                    #
+ * # but WITHOUT ANY WARRANTY; without even the implied warranty of                     #
+ * # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      #
+ * # GNU Lesser General Public License for more details.                                #
+ * #                                                                                    #
+ * # You should have received a copy of the GNU Lesser General Public License           #
+ * # along with this program. If not, see http://www.gnu.org/licenses/                  #
+ * ######################################################################################
+ * @endcond
+ */
 
-import org.lightjason.benchmark.agents.IBenchmarkAgent;
+package org.lightjason.benchmark.actions;
 
 import org.lightjason.agentspeak.action.IBaseAction;
 import org.lightjason.agentspeak.agent.IAgent;
@@ -15,6 +36,7 @@ import org.lightjason.agentspeak.language.fuzzy.CFuzzyValue;
 import org.lightjason.agentspeak.language.fuzzy.IFuzzyValue;
 import org.lightjason.agentspeak.language.instantiable.plan.trigger.CTrigger;
 import org.lightjason.agentspeak.language.instantiable.plan.trigger.ITrigger;
+import org.lightjason.benchmark.agents.IBenchmarkAgent;
 
 import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
@@ -26,7 +48,7 @@ import java.util.stream.Collectors;
  * external send action for sending messages
  * to a specified agent based on the name
  */
-public final class CSendAction extends IBaseAction
+public final class CSendAction extends ICommunication
 {
     /**
      * serial id
@@ -36,19 +58,15 @@ public final class CSendAction extends IBaseAction
      * action name
      */
     private static final IPath NAME = CPath.from( "message/send" );
-    /**
-     * list agent objects
-     */
-    private final List<IAgent<?>> m_agents;
 
     /**
-     * constructor
+     * ctor
      *
-     * @param p_agents list agent
+     * @param p_agents agents
      */
-    public CSendAction( @Nonnull final List<IAgent<?>> p_agents )
+    protected CSendAction( final List<IAgent<?>> p_agents )
     {
-        m_agents = p_agents;
+        super( p_agents );
     }
 
     @Nonnull
@@ -75,14 +93,14 @@ public final class CSendAction extends IBaseAction
             return CFuzzyValue.from( false );
 
         final IAgent<?> l_receiver = m_agents.get( l_arguments.get( 0 ).<Number>raw().intValue() % m_agents.size() );
-        final ITerm l_sender = CLiteral.from( "from", CRawTerm.from( p_context.agent().<IBenchmarkAgent<?>>raw().name() ) );
+        final ITerm l_sender = CLiteral.from( FROMFUNCTOR, CRawTerm.from( p_context.agent().<IBenchmarkAgent<?>>raw().index() ) );
         l_arguments.stream()
                    .skip( 1 )
                    .map( ITerm::raw )
                    .map( CRawTerm::from )
                    .map( i -> CTrigger.from(
-                                ITrigger.EType.ADDGOAL,
-                                CLiteral.from( "message/receive", CLiteral.from( "message", i ), l_sender )
+                                RECEIVETRIGGER,
+                                CLiteral.from( RECEIVEFUNCTOR, CLiteral.from( MESSAGEFUNCTOR, i ), l_sender )
                    ) )
                    .forEach( i -> l_receiver.trigger( i ) );
 

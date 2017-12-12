@@ -1,4 +1,26 @@
 <?xml version="1.0"?>
+<!--
+
+    ######################################################################################
+    # LGPL License                                                                       #
+    #                                                                                    #
+    # This file is part of the LightJason AgentSpeak(L++) Benchmark                      #
+    # Copyright (c) 2017, LightJason (info@lightjason.org)                               #
+    # This program is free software: you can redistribute it and/or modify               #
+    # it under the terms of the GNU Lesser General Public License as                     #
+    # published by the Free Software Foundation, either version 3 of the                 #
+    # License, or (at your option) any later version.                                    #
+    #                                                                                    #
+    # This program is distributed in the hope that it will be useful,                    #
+    # but WITHOUT ANY WARRANTY; without even the implied warranty of                     #
+    # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      #
+    # GNU Lesser General Public License for more details.                                #
+    #                                                                                    #
+    # You should have received a copy of the GNU Lesser General Public License           #
+    # along with this program. If not, see http://www.gnu.org/licenses/                  #
+    ######################################################################################
+
+-->
 <!DOCTYPE module PUBLIC "-//Puppy Crawl//DTD Check Configuration 1.2//EN" "http://www.puppycrawl.com/dtds/configuration_1_2.dtd">
 
 <!--
@@ -26,7 +48,7 @@
     </module>
 
     <module name = "Header">
-        <!--<property name = "headerFile" value = "license.txt" /> -->
+        <property name = "headerFile" value = "src/analysis/license/license.txt" />
         <property name = "fileExtensions" value = "java" />
     </module>
 
@@ -48,7 +70,7 @@
     <!-- <module name="RegexpSinglelineJava"/> -->
 
     <module name="SuppressionFilter">
-        <property name="file" value="src/checkstyle/suppressions.xml"/>
+        <property name="file" value="src/analysis/checkstyle/suppressions.xml"/>
     </module>
 
     <module name = "Translation" />
@@ -71,13 +93,13 @@
         </module>
 
         <module name = "AnonInnerLengthCheck">
-            <property name = "max" value = "215" />
+            <property name = "max" value = "50" />
         </module>
 
         <module name = "AnnotationUseStyle" />
 
         <module name = "AnonInnerLength">
-            <property name = "max" value = "215" />
+            <property name = "max" value = "50" />
         </module>
 
         <!-- <module name="ArrayTrailingComma"/> -->
@@ -112,7 +134,7 @@
         <!-- <module name = "CatchParameterName" /> -->
 
         <module name = "ClassDataAbstractionCoupling">
-            <property name = "max" value = "65" />
+            <property name = "max" value = "45" />
         </module>
 
         <!-- <module name="ClassFanOutComplexity"/> -->
@@ -308,7 +330,7 @@
         <module name = "ModifierOrder" />
 
         <module name = "MultipleStringLiterals">
-            <property name = "allowedDuplicates" value = "5" />
+            <property name = "allowedDuplicates" value = "10" />
         </module>
 
         <module name = "MultipleVariableDeclarations" />
@@ -316,7 +338,7 @@
         <module name = "MutableException" />
 
         <module name = "NPathComplexity">
-            <property name = "max" value = "475" />
+            <property name = "max" value = "275" />
         </module>
 
         <!-- <module name="NeedBraces">
@@ -357,14 +379,14 @@
         <module name = "PackageDeclaration" />
 
         <module name = "PackageName">
-            <property name = "format" value = "^[a-z]{1,}(\.[a-z]{1,}[a-z_0-9]*)*$" />
+            <property name = "format" value = "^[a-z]{3,}(\.[a-z]{2,}[a-z_0-9]*)*$" />
         </module>
 
         <module name = "ParameterAssignment" />
 
         <module name = "ParameterName">
             <!-- lambda expression must defined only one-letter name -->
-            <property name = "format" value = "^((p_[a-z0-9]{2,})|[a-z])$" />
+            <property name = "format" value = "^((p_[a-zA-Z0-9]{2,})|[a-z])$" />
         </module>
 
         <module name = "ParameterNumber">
@@ -387,8 +409,8 @@
         </module>
 
         <module name="ReturnCount">
-            <property name="max" value="20"/>
-            <property name="maxForVoid" value="20"/>
+            <property name="max" value="5"/>
+            <property name="maxForVoid" value="5"/>
         </module>
 
         <module name = "RightCurly">
@@ -448,7 +470,7 @@
         <module name = "TypecastParenPad" />
 
         <module name = "UncommentedMain">
-            <property name = "excludedClasses" value = "(Test.*|CRuntime)$" />
+            <property name = "excludedClasses" value = "((Test.*)|CMain)$" />
         </module>
 
         <module name = "UnnecessaryParentheses" />

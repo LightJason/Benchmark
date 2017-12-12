@@ -1,11 +1,13 @@
 *.*
 !.gitignore
+!Dockerfile
 !circle.yml
 !pom.xml
 !*.md
 !*.java
-!*.asl
+!src/resources/**/*.yml
 
-!src/checkstyle/*.xml
+!src/analysis/**/*.xml
+!src/analysis/**/*.txt
 
 target/**
