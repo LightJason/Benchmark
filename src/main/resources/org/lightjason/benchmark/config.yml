@@ -8,4 +8,5 @@ agentvariables:
 szenario:
     runs: 100
     warmup: 10
+    type: "asynchronized"
     agentincrement: 5
