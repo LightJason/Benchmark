@@ -21,73 +21,34 @@
  * @endcond
  */
 
-package org.lightjason.benchmark.scenario;
+package org.lightjason.benchmark.grammar.elements;
 
-import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
-import org.lightjason.agentspeak.language.variable.CConstant;
-import org.lightjason.agentspeak.language.variable.IVariable;
-import org.lightjason.benchmark.common.CConfiguration;
-
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 
 
 /**
- * scenario
+ * class of a constant value
  */
-public final class CScenario implements IScenario
+public class CConstant implements IFunction
 {
     /**
-     * number fo runs
+     * number value
      */
-    private final int m_runs;
-    /**
-     * warum-up simulation steps
-     */
-    private final int m_warmup;
-    /**
-     * agent constant values
-     */
-    private final Set<IVariable<?>> m_agentconstants;
+    private final Number m_number;
 
     /**
-     * instantiate scneario
-     */
-    private CScenario()
-    {
-        m_runs = CConfiguration.INSTANCE.<Number>getOrDefault( 0, "agent", "runs" ).intValue();
-        m_warmup = CConfiguration.INSTANCE.<Number>getOrDefault( 0, "agent", "warmup" ).intValue();
-        m_agentconstants = Collections.unmodifiableSet(
-            CConfiguration.INSTANCE.<Map<String, Object>>getOrDefault( Collections.emptyMap(), "agent", "constant" )
-            .entrySet()
-            .parallelStream()
-            .map( i -> new CConstant<>( i.getKey(), i.getValue() ) )
-            .collect( Collectors.toSet() )
-        );
-    }
-
-    @Override
-    public void run()
-    {
-
-    }
-
-    @Override
-    public SummaryStatistics get()
-    {
-        return null;
-    }
-
-    /**
-     * returns a new scneario instance
+     * number
      *
-     * @return scenario instance
+     * @param p_number static number
      */
-    public static IScenario build()
+    public CConstant( @Nonnull final Number p_number )
     {
-        return new CScenario();
+        m_number = p_number;
     }
 
+    @Override
+    public Number apply( final Number p_lhs, final Number p_rhs )
+    {
+        return m_number;
+    }
 }

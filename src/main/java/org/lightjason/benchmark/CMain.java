@@ -59,7 +59,7 @@ public final class CMain
      */
     public static void main( final String[] p_args )
     {
-
+        System.out.println( 4D % 3D );
     }
 
     /*

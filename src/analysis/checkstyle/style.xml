@@ -409,7 +409,7 @@
         </module>
 
         <module name="ReturnCount">
-            <property name="max" value="5"/>
+            <property name="max" value="8"/>
             <property name="maxForVoid" value="5"/>
         </module>
 

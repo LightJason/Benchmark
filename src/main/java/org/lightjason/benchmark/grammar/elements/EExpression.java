@@ -21,73 +21,72 @@
  * @endcond
  */
 
-package org.lightjason.benchmark.scenario;
+package org.lightjason.benchmark.grammar.elements;
 
-import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
-import org.lightjason.agentspeak.language.variable.CConstant;
-import org.lightjason.agentspeak.language.variable.IVariable;
-import org.lightjason.benchmark.common.CConfiguration;
-
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
+import java.text.MessageFormat;
 
 
 /**
- * scenario
+ * operation
  */
-public final class CScenario implements IScenario
+public enum EExpression implements IFunction
 {
+    POW( "^" ),
+    MULTIPLY( "*" ),
+    DIVIDE( "/" ),
+    MODULO( "%" ),
+    PLUS( "+" ),
+    MINUS( "-" );
+
     /**
-     * number fo runs
+     * operator
      */
-    private final int m_runs;
-    /**
-     * warum-up simulation steps
-     */
-    private final int m_warmup;
-    /**
-     * agent constant values
-     */
-    private final Set<IVariable<?>> m_agentconstants;
+    private final String m_operator;
 
     /**
-     * instantiate scneario
-     */
-    private CScenario()
-    {
-        m_runs = CConfiguration.INSTANCE.<Number>getOrDefault( 0, "agent", "runs" ).intValue();
-        m_warmup = CConfiguration.INSTANCE.<Number>getOrDefault( 0, "agent", "warmup" ).intValue();
-        m_agentconstants = Collections.unmodifiableSet(
-            CConfiguration.INSTANCE.<Map<String, Object>>getOrDefault( Collections.emptyMap(), "agent", "constant" )
-            .entrySet()
-            .parallelStream()
-            .map( i -> new CConstant<>( i.getKey(), i.getValue() ) )
-            .collect( Collectors.toSet() )
-        );
-    }
-
-    @Override
-    public void run()
-    {
-
-    }
-
-    @Override
-    public SummaryStatistics get()
-    {
-        return null;
-    }
-
-    /**
-     * returns a new scneario instance
+     * ctor
      *
-     * @return scenario instance
+     * @param p_operator string value
      */
-    public static IScenario build()
+    EExpression( @Nonnull final String p_operator )
     {
-        return new CScenario();
+        m_operator = p_operator;
     }
 
+
+    @Override
+    public final Number apply( final Number p_lhs, final Number p_rhs )
+    {
+        switch ( this )
+        {
+            case POW:
+                return Math.pow( p_lhs.doubleValue(), p_rhs.doubleValue() );
+
+            case MULTIPLY:
+                return p_lhs.doubleValue() * p_rhs.doubleValue();
+
+            case DIVIDE:
+                return p_lhs.doubleValue() / p_rhs.doubleValue();
+
+            case PLUS:
+                return p_lhs.doubleValue() + p_rhs.doubleValue();
+
+            case MINUS:
+                return p_lhs.doubleValue() - p_rhs.doubleValue();
+
+            case MODULO:
+                return p_lhs.doubleValue() % p_rhs.doubleValue();
+
+            default:
+                throw new RuntimeException( MessageFormat.format( "unknown operator", this ) );
+        }
+    }
+
+
+    @Override
+    public final String toString()
+    {
+        return m_operator;
+    }
 }

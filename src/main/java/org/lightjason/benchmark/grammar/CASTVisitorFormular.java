@@ -21,73 +21,51 @@
  * @endcond
  */
 
-package org.lightjason.benchmark.scenario;
+package org.lightjason.benchmark.grammar;
 
-import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
-import org.lightjason.agentspeak.language.variable.CConstant;
-import org.lightjason.agentspeak.language.variable.IVariable;
-import org.lightjason.benchmark.common.CConfiguration;
-
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
+import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
+import org.lightjason.benchmark.grammar.elements.CConstant;
+import org.lightjason.benchmark.grammar.elements.CVariable;
+import org.lightjason.benchmark.grammar.elements.IFunction;
 
 
 /**
- * scenario
+ * formular parser
  */
-public final class CScenario implements IScenario
+@SuppressWarnings( {"all", "warnings", "unchecked", "unused", "cast"} )
+public final class CASTVisitorFormular extends AbstractParseTreeVisitor<IFunction> implements FormularVisitor<IFunction>
 {
-    /**
-     * number fo runs
-     */
-    private final int m_runs;
-    /**
-     * warum-up simulation steps
-     */
-    private final int m_warmup;
-    /**
-     * agent constant values
-     */
-    private final Set<IVariable<?>> m_agentconstants;
-
-    /**
-     * instantiate scneario
-     */
-    private CScenario()
-    {
-        m_runs = CConfiguration.INSTANCE.<Number>getOrDefault( 0, "agent", "runs" ).intValue();
-        m_warmup = CConfiguration.INSTANCE.<Number>getOrDefault( 0, "agent", "warmup" ).intValue();
-        m_agentconstants = Collections.unmodifiableSet(
-            CConfiguration.INSTANCE.<Map<String, Object>>getOrDefault( Collections.emptyMap(), "agent", "constant" )
-            .entrySet()
-            .parallelStream()
-            .map( i -> new CConstant<>( i.getKey(), i.getValue() ) )
-            .collect( Collectors.toSet() )
-        );
-    }
 
     @Override
-    public void run()
-    {
-
-    }
-
-    @Override
-    public SummaryStatistics get()
+    public IFunction visitFormular( final FormularParser.FormularContext p_context )
     {
         return null;
     }
 
-    /**
-     * returns a new scneario instance
-     *
-     * @return scenario instance
-     */
-    public static IScenario build()
+    @Override
+    public IFunction visitBracketexpression( final FormularParser.BracketexpressionContext p_context )
     {
-        return new CScenario();
+        return null;
     }
 
+    @Override
+    public IFunction visitExpression( final FormularParser.ExpressionContext p_context )
+    {
+        if ( p_context.element() != null )
+            return this.visit( p_context.element() );
+
+        return null;
+    }
+
+    @Override
+    public IFunction visitElement( final FormularParser.ElementContext p_context )
+    {
+        return p_context.number() != null ? this.visit( p_context.number() ) : new CVariable();
+    }
+
+    @Override
+    public IFunction visitNumber( final FormularParser.NumberContext p_context )
+    {
+        return new CConstant( Double.valueOf( p_context.getText() ) );
+    }
 }

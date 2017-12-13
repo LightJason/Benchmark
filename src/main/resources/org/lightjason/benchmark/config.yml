@@ -1,13 +1,13 @@
 runtime:
-    warmup: 10
-    agentincrement: 5
     type: "asynchronized"
 
 agent:
+    runs: 10
+    warmup: 10
+
     constant:
         count: 5
 
     source:
-        foo.asl: 100
-        blub.as: 100
-
+        foo.asl: "i+5"
+        blub.asl: "i+10"

@@ -21,73 +21,17 @@
  * @endcond
  */
 
-package org.lightjason.benchmark.scenario;
-
-import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
-import org.lightjason.agentspeak.language.variable.CConstant;
-import org.lightjason.agentspeak.language.variable.IVariable;
-import org.lightjason.benchmark.common.CConfiguration;
-
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+package org.lightjason.benchmark.grammar.elements;
 
 /**
- * scenario
+ * variable
  */
-public final class CScenario implements IScenario
+public final class CVariable implements IFunction
 {
-    /**
-     * number fo runs
-     */
-    private final int m_runs;
-    /**
-     * warum-up simulation steps
-     */
-    private final int m_warmup;
-    /**
-     * agent constant values
-     */
-    private final Set<IVariable<?>> m_agentconstants;
-
-    /**
-     * instantiate scneario
-     */
-    private CScenario()
-    {
-        m_runs = CConfiguration.INSTANCE.<Number>getOrDefault( 0, "agent", "runs" ).intValue();
-        m_warmup = CConfiguration.INSTANCE.<Number>getOrDefault( 0, "agent", "warmup" ).intValue();
-        m_agentconstants = Collections.unmodifiableSet(
-            CConfiguration.INSTANCE.<Map<String, Object>>getOrDefault( Collections.emptyMap(), "agent", "constant" )
-            .entrySet()
-            .parallelStream()
-            .map( i -> new CConstant<>( i.getKey(), i.getValue() ) )
-            .collect( Collectors.toSet() )
-        );
-    }
 
     @Override
-    public void run()
+    public final Number apply( final Number p_lhs, final Number p_rhs )
     {
-
+        return p_lhs;
     }
-
-    @Override
-    public SummaryStatistics get()
-    {
-        return null;
-    }
-
-    /**
-     * returns a new scneario instance
-     *
-     * @return scenario instance
-     */
-    public static IScenario build()
-    {
-        return new CScenario();
-    }
-
 }

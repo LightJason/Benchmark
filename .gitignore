@@ -3,10 +3,14 @@
 !Dockerfile
 !circle.yml
 !pom.xml
+!*.g4
 !*.md
 !*.java
-!src/main/resources/**/*.yml
 
+!src/main/resources/**/*.yml
+!src/site/*.xml
+!src/site/*.css
+!src/site/*.doxyfile
 !src/analysis/**/*.xml
 !src/analysis/**/*.txt
 
