@@ -23,49 +23,15 @@
 
 package org.lightjason.benchmark.grammar;
 
-import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
-import org.lightjason.benchmark.grammar.elements.CConstant;
-import org.lightjason.benchmark.grammar.elements.CVariable;
-import org.lightjason.benchmark.grammar.elements.IFunction;
-
+import java.io.InputStream;
+import java.util.function.Function;
 
 /**
- * formular parser
+ * parser interface
  */
-@SuppressWarnings( {"all", "warnings", "unchecked", "unused", "cast"} )
-public final class CASTVisitorFormular extends AbstractParseTreeVisitor<IFunction> implements FormularVisitor<IFunction>
+public interface IParser extends Function<InputStream, Function<Number, Number>>
 {
 
-    @Override
-    public IFunction visitFormular( final FormularParser.FormularContext p_context )
-    {
-        return null;
-    }
 
-    @Override
-    public IFunction visitBracketexpression( final FormularParser.BracketexpressionContext p_context )
-    {
-        return null;
-    }
 
-    @Override
-    public IFunction visitExpression( final FormularParser.ExpressionContext p_context )
-    {
-        if ( p_context.element() != null )
-            return this.visit( p_context.element() );
-
-        return null;
-    }
-
-    @Override
-    public IFunction visitElement( final FormularParser.ElementContext p_context )
-    {
-        return p_context.number() != null ? this.visit( p_context.number() ) : new CVariable();
-    }
-
-    @Override
-    public IFunction visitNumber( final FormularParser.NumberContext p_context )
-    {
-        return new CConstant( Double.valueOf( p_context.getText() ) );
-    }
 }

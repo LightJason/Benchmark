@@ -23,8 +23,11 @@
 
 package org.lightjason.benchmark;
 
+import org.apache.commons.io.IOUtils;
 import org.lightjason.agentspeak.agent.IAgent;
+import org.lightjason.benchmark.grammar.CFormularParser;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 import java.util.logging.LogManager;
@@ -56,10 +59,11 @@ public final class CMain
      * main method
      *
      * @param p_args command-line arguments
+     * @throws IOException parsing errors
      */
-    public static void main( final String[] p_args )
+    public static void main( final String[] p_args ) throws IOException
     {
-        System.out.println( 4D % 3D );
+        System.out.println( new CFormularParser().apply( IOUtils.toInputStream( "(5+i)*2", "UTF-8" ) ).apply( 10 ) );
     }
 
     /*

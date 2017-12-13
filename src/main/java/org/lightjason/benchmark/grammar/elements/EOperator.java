@@ -30,30 +30,14 @@ import java.text.MessageFormat;
 /**
  * operation
  */
-public enum EExpression implements IFunction
+public enum EOperator implements IFunction
 {
-    POW( "^" ),
-    MULTIPLY( "*" ),
-    DIVIDE( "/" ),
-    MODULO( "%" ),
-    PLUS( "+" ),
-    MINUS( "-" );
-
-    /**
-     * operator
-     */
-    private final String m_operator;
-
-    /**
-     * ctor
-     *
-     * @param p_operator string value
-     */
-    EExpression( @Nonnull final String p_operator )
-    {
-        m_operator = p_operator;
-    }
-
+    POW,
+    MULTIPLY,
+    DIVIDE,
+    MODULO,
+    PLUS,
+    MINUS;
 
     @Override
     public final Number apply( final Number p_lhs, final Number p_rhs )
@@ -83,10 +67,42 @@ public enum EExpression implements IFunction
         }
     }
 
-
-    @Override
-    public final String toString()
+    public IFunction get( @Nonnull final IFunction p_lhs, @Nonnull final IFunction p_rhs )
     {
-        return m_operator;
+        return new CExpression( this, p_lhs, p_rhs );
     }
+
+
+    /**
+     * expression
+     */
+    public static final class CExpression implements IFunction
+    {
+        /**
+         * operator
+         */
+        private final EOperator m_operator;
+        /**
+         * left-hand-side expression
+         */
+        private final IFunction m_lhs;
+        /**
+         * right-hand-side expression
+         */
+        private final IFunction m_rhs;
+
+        private CExpression( @Nonnull final EOperator p_operator, @Nonnull final IFunction p_lhs, @Nonnull final IFunction p_rhs )
+        {
+            m_operator = p_operator;
+            m_lhs = p_lhs;
+            m_rhs = p_rhs;
+        }
+
+        @Override
+        public final Number apply( final Number p_lhs, final Number p_rhs )
+        {
+            return m_operator.apply( m_lhs.apply( p_lhs, p_rhs ), m_rhs.apply( p_lhs, p_rhs ) );
+        }
+    }
+
 }
