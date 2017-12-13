@@ -63,7 +63,7 @@ public final class CSendAction extends ICommunication
      *
      * @param p_agents agents
      */
-    protected CSendAction( final List<IBenchmarkAgent> p_agents )
+    public CSendAction( final List<IBenchmarkAgent> p_agents )
     {
         super( p_agents );
     }

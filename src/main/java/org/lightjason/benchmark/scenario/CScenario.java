@@ -24,9 +24,16 @@
 package org.lightjason.benchmark.scenario;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
+import org.lightjason.agentspeak.action.IAction;
+import org.lightjason.agentspeak.common.CCommon;
+import org.lightjason.agentspeak.generator.IAgentGenerator;
+import org.lightjason.agentspeak.language.execution.IVariableBuilder;
 import org.lightjason.agentspeak.language.variable.CConstant;
-import org.lightjason.agentspeak.language.variable.IVariable;
+import org.lightjason.benchmark.actions.CBroadcastAction;
+import org.lightjason.benchmark.actions.CSendAction;
+import org.lightjason.benchmark.agent.CBenchmarkAgent;
+import org.lightjason.benchmark.agent.IBaseBenchmarkAgent;
+import org.lightjason.benchmark.agent.IBenchmarkAgent;
 import org.lightjason.benchmark.grammar.CFormularParser;
 import org.lightjason.benchmark.runtime.ERuntime;
 import org.lightjason.benchmark.runtime.IRuntime;
@@ -38,10 +45,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 /**
@@ -49,6 +58,10 @@ import java.util.stream.Collectors;
  */
 public final class CScenario implements IScenario
 {
+    /**
+     * statistic
+     */
+    private final IStatistic m_statistic = new CStatistic();
     /**
      * runtime
      */
@@ -61,10 +74,6 @@ public final class CScenario implements IScenario
      * warum-up simulation steps
      */
     private final int m_warmup;
-    /**
-     * agent constant values
-     */
-    private final Set<IVariable<?>> m_agentconstants;
     /**
      * map with asl pathes and generatoring functions
      */
@@ -83,20 +92,76 @@ public final class CScenario implements IScenario
         m_runs = p_configuration.<Number>getOrDefault( 0, "agent", "runs" ).intValue();
         m_warmup = p_configuration.<Number>getOrDefault( 0, "agent", "warmup" ).intValue();
 
-        m_agentconstants = Collections.unmodifiableSet(
-            p_configuration.<Map<String, Object>>getOrDefault( Collections.emptyMap(), "agent", "constant" )
-            .entrySet()
-            .parallelStream()
-            .map( i -> new CConstant<>( i.getKey(), i.getValue() ) )
-            .collect( Collectors.toSet() )
+
+        // action instantiation
+
+
+
+
+        // create variable builder
+        final IVariableBuilder l_variablebuilder = new CBenchmarkAgent.CVariableBuilder(
+            Collections.unmodifiableSet(
+                p_configuration.<Map<String, Object>>getOrDefault( Collections.emptyMap(), "agent", "constant" )
+                               .entrySet()
+                               .parallelStream()
+                               .map( i -> new CConstant<>( i.getKey(), i.getValue() ) )
+                               .collect( Collectors.toSet() )
+            )
         );
 
+
+
+
+        // agent generators
         m_agentdefinition = Collections.unmodifiableMap(
             p_configuration.<Map<String, Object>>getOrDefault( Collections.emptyMap(), "agent", "source" )
                     .entrySet()
                     .parallelStream()
                     .collect( Collectors.toMap( Map.Entry::getKey, i -> parse( i.getValue().toString() ) ) )
         );
+
+
+    }
+
+    /**
+     * instantiate actions
+     *
+     * @param p_agents agents
+     * @return actions
+     */
+    private Set<IAction> action( final List<IBenchmarkAgent> p_agents )
+    {
+        return m_statistic.star( "action" ).stop(
+            Collections.unmodifiableSet(
+                Stream.concat(
+                    Stream.concat(
+                        CCommon.actionsFromPackage(),
+                        CCommon.actionsFromAgentClass( IBaseBenchmarkAgent.class )
+                    ),
+                    Stream.of(
+                        new CBroadcastAction( null ),
+                        new CSendAction( null )
+                    )
+                ).collect( Collectors.toSet() )
+            )
+        );
+    }
+
+
+    private IAgentGenerator<IBenchmarkAgent> generator( @Nonnull final String p_asl, @Nonnull final Set<IAction> p_action,
+                                                        @Nonnull final IVariableBuilder p_variablebuilder, @Nonnull final List<IBenchmarkAgent> p_agents )
+    {
+        try
+        (
+            final InputStream l_stream = new FileInputStream( p_asl );
+        )
+        {
+            return m_statistic.star( "parser" ).stop( new CBenchmarkAgent.CGenerator( l_stream, p_action, p_variablebuilder, p_agents ) );
+        }
+        catch ( final Exception l_exception )
+        {
+            throw new RuntimeException( l_exception );
+        }
     }
 
     /**
@@ -127,22 +192,10 @@ public final class CScenario implements IScenario
     @Override
     public final IScenario next()
     {
+        // running execution
+
         m_currentrun++;
         return this;
-    }
-
-
-
-    @Override
-    public void run()
-    {
-
-    }
-
-    @Override
-    public final SummaryStatistics get()
-    {
-        return null;
     }
 
     /**

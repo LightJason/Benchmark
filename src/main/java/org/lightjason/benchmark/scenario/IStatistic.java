@@ -23,13 +23,42 @@
 
 package org.lightjason.benchmark.scenario;
 
-import java.util.Iterator;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+
+import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 
 
 /**
- * interface of an benchmarking scenario
+ * statistic interface
  */
-public interface IScenario extends Iterator<IScenario>
+public interface IStatistic extends BiConsumer<String, Number>, Supplier<Map<String, DescriptiveStatistics>>
 {
+    /**
+     * starts a timer
+     *
+     * @param p_name name of the timer
+     * @return timer
+     */
+    ITimer star( final String p_name );
 
+    /**
+     * interface of a timer object
+     */
+    interface ITimer
+    {
+        /**
+         * name of the timer
+         */
+        String name();
+
+        /**
+         * stop timer
+         *
+         * @param p_value any value
+         * @return returns value
+         */
+        <T> T stop( final T p_value );
+    }
 }

@@ -63,7 +63,7 @@ public final class CBroadcastAction extends ICommunication
      *
      * @param p_agents agents
      */
-    protected CBroadcastAction( final List<IBenchmarkAgent> p_agents )
+    public CBroadcastAction( final List<IBenchmarkAgent> p_agents )
     {
         super( p_agents );
     }

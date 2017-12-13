@@ -25,7 +25,6 @@ package org.lightjason.benchmark.agent;
 
 import org.lightjason.agentspeak.action.IAction;
 import org.lightjason.agentspeak.agent.IBaseAgent;
-import org.lightjason.agentspeak.common.CCommon;
 import org.lightjason.agentspeak.configuration.IAgentConfiguration;
 import org.lightjason.agentspeak.generator.IBaseAgentGenerator;
 import org.lightjason.agentspeak.language.execution.IVariableBuilder;
@@ -34,9 +33,8 @@ import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 
 /**
@@ -118,15 +116,12 @@ public abstract class IBaseBenchmarkAgent extends IBaseAgent<IBenchmarkAgent> im
          * @param p_agents agent list
          * @throws Exception on any error
          */
-        protected IGenerator( @Nonnull final InputStream p_stream, @Nonnull final Stream<IAction> p_actions,
+        protected IGenerator( @Nonnull final InputStream p_stream, @Nonnull final Set<IAction> p_actions,
                               @Nonnull final IVariableBuilder p_variablebuilder,
                               @Nonnull final List<IBenchmarkAgent> p_agents ) throws Exception
         {
             super( p_stream,
-                   Stream.concat(
-                       CCommon.actionsFromAgentClass( IBaseBenchmarkAgent.class ),
-                       p_actions
-                   ).collect( Collectors.toSet() ),
+                   p_actions,
                    p_variablebuilder
             );
 
