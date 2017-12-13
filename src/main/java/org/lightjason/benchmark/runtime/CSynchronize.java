@@ -24,20 +24,22 @@
 package org.lightjason.benchmark.runtime;
 
 
-import org.lightjason.benchmark.scenario.IScenario;
+import org.lightjason.benchmark.agent.IBenchmarkAgent;
+
+import java.util.Collection;
 
 
 /**
  * synchronized step-based execution
  */
-public final class CSynchronize implements IRuntime
+public final class CSynchronize extends IBaseRuntime
 {
+
     @Override
-    public final void accept( final IScenario p_scenario )
+    public final void accept( final Collection<IBenchmarkAgent> p_agents )
     {
-
-
-
-
+        while ( p_agents.parallelStream().noneMatch( IBenchmarkAgent::active ) )
+            p_agents.parallelStream().forEach( CSynchronize::execute );
     }
+
 }

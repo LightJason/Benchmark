@@ -25,13 +25,14 @@ package org.lightjason.benchmark.scenario;
 
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 
+import java.util.Iterator;
 import java.util.function.Supplier;
 
 
 /**
  * interface of an benchmarking scenario
  */
-public interface IScenario extends Runnable, Supplier<SummaryStatistics>
+public interface IScenario extends Runnable, Supplier<SummaryStatistics>, Iterator<IScenario>
 {
 
 }

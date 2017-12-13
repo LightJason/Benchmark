@@ -23,9 +23,10 @@
 
 package org.lightjason.benchmark.runtime;
 
-import org.lightjason.benchmark.scenario.IScenario;
+import org.lightjason.benchmark.agent.IBenchmarkAgent;
 
 import javax.annotation.Nonnull;
+import java.util.Collection;
 import java.util.Locale;
 
 
@@ -36,21 +37,23 @@ public enum ERuntime implements IRuntime
 {
     SYNCHRONIZED( new CSynchronize() ),
     ASYNCHRONIZED( new CAsychronize() );
-
     /**
      * runtime instance
      */
     private final IRuntime m_runtime;
 
+    /**
+     * @param p_runtime runtime
+     */
     ERuntime( final IRuntime p_runtime )
     {
         m_runtime = p_runtime;
     }
 
     @Override
-    public void accept( final IScenario p_scenario )
+    public final void accept( final Collection<IBenchmarkAgent> p_agents )
     {
-        m_runtime.accept( p_scenario );
+        m_runtime.accept( p_agents );
     }
 
     /**

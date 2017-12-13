@@ -23,14 +23,15 @@
 
 package org.lightjason.benchmark.runtime;
 
-import org.lightjason.benchmark.scenario.IScenario;
+import org.lightjason.benchmark.agent.IBenchmarkAgent;
 
+import java.util.Collection;
 import java.util.function.Consumer;
 
 
 /**
  * runtime interface
  */
-public interface IRuntime extends Consumer<IScenario>
+public interface IRuntime extends Consumer<Collection<IBenchmarkAgent>>
 {
 }

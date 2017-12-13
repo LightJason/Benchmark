@@ -23,14 +23,24 @@
 
 package org.lightjason.benchmark.scenario;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.lightjason.agentspeak.language.variable.CConstant;
 import org.lightjason.agentspeak.language.variable.IVariable;
-import org.lightjason.benchmark.common.CConfiguration;
+import org.lightjason.benchmark.grammar.CFormularParser;
+import org.lightjason.benchmark.runtime.ERuntime;
+import org.lightjason.benchmark.runtime.IRuntime;
+import org.yaml.snakeyaml.Yaml;
 
+import javax.annotation.Nonnull;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 
@@ -39,6 +49,10 @@ import java.util.stream.Collectors;
  */
 public final class CScenario implements IScenario
 {
+    /**
+     * runtime
+     */
+    private final IRuntime m_runtime;
     /**
      * number fo runs
      */
@@ -51,22 +65,73 @@ public final class CScenario implements IScenario
      * agent constant values
      */
     private final Set<IVariable<?>> m_agentconstants;
+    /**
+     * map with asl pathes and generatoring functions
+     */
+    private final Map<String, Function<Number, Number>> m_agentdefinition;
+    /**
+     * current run
+     */
+    private int m_currentrun;
 
     /**
      * instantiate scneario
      */
-    private CScenario()
+    private CScenario( @Nonnull final ITree p_configuration )
     {
-        m_runs = CConfiguration.INSTANCE.<Number>getOrDefault( 0, "agent", "runs" ).intValue();
-        m_warmup = CConfiguration.INSTANCE.<Number>getOrDefault( 0, "agent", "warmup" ).intValue();
+        m_runtime = ERuntime.from( p_configuration.getOrDefault( "", "runtime", "type" ) );
+        m_runs = p_configuration.<Number>getOrDefault( 0, "agent", "runs" ).intValue();
+        m_warmup = p_configuration.<Number>getOrDefault( 0, "agent", "warmup" ).intValue();
+
         m_agentconstants = Collections.unmodifiableSet(
-            CConfiguration.INSTANCE.<Map<String, Object>>getOrDefault( Collections.emptyMap(), "agent", "constant" )
+            p_configuration.<Map<String, Object>>getOrDefault( Collections.emptyMap(), "agent", "constant" )
             .entrySet()
             .parallelStream()
             .map( i -> new CConstant<>( i.getKey(), i.getValue() ) )
             .collect( Collectors.toSet() )
         );
+
+        m_agentdefinition = Collections.unmodifiableMap(
+            p_configuration.<Map<String, Object>>getOrDefault( Collections.emptyMap(), "agent", "source" )
+                    .entrySet()
+                    .parallelStream()
+                    .collect( Collectors.toMap( Map.Entry::getKey, i -> parse( i.getValue().toString() ) ) )
+        );
     }
+
+    /**
+     * parse string formular
+     *
+     * @param p_formular input string
+     * @return calculation function
+     */
+    private static Function<Number, Number> parse( @Nonnull final String p_formular )
+    {
+        try
+        {
+            return new CFormularParser().apply( IOUtils.toInputStream( p_formular, "UTF-8" ) );
+        }
+        catch ( final IOException l_exception )
+        {
+            throw new UncheckedIOException( l_exception );
+        }
+    }
+
+
+    @Override
+    public boolean hasNext()
+    {
+        return m_currentrun < m_runs;
+    }
+
+    @Override
+    public final IScenario next()
+    {
+        m_currentrun++;
+        return this;
+    }
+
+
 
     @Override
     public void run()
@@ -75,7 +140,7 @@ public final class CScenario implements IScenario
     }
 
     @Override
-    public SummaryStatistics get()
+    public final SummaryStatistics get()
     {
         return null;
     }
@@ -83,11 +148,24 @@ public final class CScenario implements IScenario
     /**
      * returns a new scneario instance
      *
+     * @param p_file configuration file
      * @return scenario instance
      */
-    public static IScenario build()
+    public static IScenario build( @Nonnull final String p_file )
     {
-        return new CScenario();
+        try
+        (
+            final InputStream l_stream = new FileInputStream( p_file )
+        )
+        {
+
+            return new CScenario( new ITree.CTree( new Yaml().load( l_stream ) ) );
+
+        }
+        catch ( final Exception l_exception )
+        {
+            throw new RuntimeException( l_exception );
+        }
     }
 
 }

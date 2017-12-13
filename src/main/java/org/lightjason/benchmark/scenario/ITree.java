@@ -21,7 +21,7 @@
  * @endcond
  */
 
-package org.lightjason.benchmark.common;
+package org.lightjason.benchmark.scenario;
 
 
 import javax.annotation.Nonnull;

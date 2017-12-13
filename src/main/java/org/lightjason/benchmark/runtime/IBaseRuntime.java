@@ -25,18 +25,27 @@ package org.lightjason.benchmark.runtime;
 
 import org.lightjason.benchmark.agent.IBenchmarkAgent;
 
-import java.util.Collection;
-
 
 /**
- * asychronized execution
+ * base runtime structure
  */
-public final class CAsychronize extends IBaseRuntime
+public abstract class IBaseRuntime implements IRuntime
 {
 
-    @Override
-    public final void accept( final Collection<IBenchmarkAgent> p_iBenchmarkAgents )
+    /**
+     * agent execution
+     *
+     * @param p_agent agent execution
+     */
+    protected static void execute( final IBenchmarkAgent p_agent )
     {
-        // https://baptiste-wicht.com/posts/2010/09/java-concurrency-part-7-executors-and-thread-pools.html
+        try
+        {
+            p_agent.call();
+        }
+        catch ( final Exception l_exception )
+        {
+            throw new RuntimeException( l_exception );
+        }
     }
 }
