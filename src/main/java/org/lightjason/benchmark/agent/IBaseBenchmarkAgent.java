@@ -106,13 +106,13 @@ public abstract class IBaseBenchmarkAgent extends IBaseAgent<IBenchmarkAgent> im
     /**
      * agent action to get neighbours
      *
-     * @param p_id filter id
+     * @param p_neighbor neighbor name
      * @return name list
      */
     @IAgentActionFilter
-    private List<String> neighbour( final String... p_id )
+    private List<String> neighbor( final String p_neighbor )
     {
-        return m_neighborhood.neighbor( p_id ).collect( Collectors.toList() );
+        return m_neighborhood.neighbor( p_neighbor, m_identifier ).collect( Collectors.toList() );
     }
 
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------

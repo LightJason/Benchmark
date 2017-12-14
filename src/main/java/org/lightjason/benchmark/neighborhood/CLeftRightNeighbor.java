@@ -28,9 +28,9 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.lightjason.benchmark.agent.IBenchmarkAgent;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -60,6 +60,7 @@ public class CLeftRightNeighbor implements INeighborhood
         m_neighbor.clear();
 
         final List<String> l_neighbor = new ArrayList<>( m_agents.keySet() );
+        Collections.shuffle( l_neighbor );
 
         IntStream.range( 0, l_neighbor.size() )
                  .parallel()
@@ -76,23 +77,20 @@ public class CLeftRightNeighbor implements INeighborhood
 
     @Nonnull
     @Override
-    public Stream<String> neighbor( @Nullable final String... p_id )
+    public final Stream<String> neighbor( @Nonnull final String p_neighbor, @Nonnull final String p_agent )
     {
-        if ( ( p_id == null ) || ( p_id.length != 2 ) )
-            return Stream.empty();
-
-        switch ( p_id[0].toLowerCase( Locale.ROOT ) )
+        switch ( p_neighbor.toLowerCase( Locale.ROOT ) )
         {
             case "left":
-                final Pair<String, String> l_left = m_neighbor.get( p_id[1] );
+                final Pair<String, String> l_left = m_neighbor.get( p_agent );
                 return l_left == null ? Stream.empty() : Stream.of( l_left.getLeft() );
 
             case "right":
-                final Pair<String, String> l_right = m_neighbor.get( p_id[1] );
+                final Pair<String, String> l_right = m_neighbor.get( p_agent );
                 return l_right == null ? Stream.empty() : Stream.of( l_right.getRight() );
 
             default:
-                throw new RuntimeException( MessageFormat.format( "unknown parameter [{0}]", p_id[0] ) );
+                throw new RuntimeException( MessageFormat.format( "unknown parameter [{0}]", p_neighbor ) );
         }
     }
 

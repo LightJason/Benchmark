@@ -26,7 +26,6 @@ package org.lightjason.benchmark.neighborhood;
 import org.lightjason.benchmark.agent.IBenchmarkAgent;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -48,11 +47,12 @@ public interface INeighborhood extends Function<String, IBenchmarkAgent>, Consum
     /**
      * returns the neighbours
      *
-     * @param p_id optional ids
+     * @param p_neighbor neighbor
+     * @param p_agent agent id
      * @return stream of neighbours
      */
     @Nonnull
-    Stream<String> neighbor( @Nullable final String... p_id );
+    Stream<String> neighbor( @Nonnull String p_neighbor, @Nonnull final String p_agent );
 
     /**
      * returns agent stream
