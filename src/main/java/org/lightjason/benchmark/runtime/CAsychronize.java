@@ -26,6 +26,8 @@ package org.lightjason.benchmark.runtime;
 import org.lightjason.benchmark.agent.IBenchmarkAgent;
 
 import java.util.Collection;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
 /**
@@ -33,10 +35,42 @@ import java.util.Collection;
  */
 public final class CAsychronize extends IBaseRuntime
 {
+    /**
+     * stealing pool
+     */
+    private final ExecutorService m_pool = Executors.newWorkStealingPool();
 
     @Override
-    public final void accept( final Collection<IBenchmarkAgent> p_iBenchmarkAgents )
+    public final void accept( final Collection<IBenchmarkAgent> p_agents )
     {
-        // https://baptiste-wicht.com/posts/2010/09/java-concurrency-part-7-executors-and-thread-pools.html
+        p_agents.parallelStream().forEach( CExecution::new );
+    }
+
+    /**
+     * execution agent wrapper
+     */
+    private final class CExecution implements Runnable
+    {
+        private final IBenchmarkAgent m_agent;
+
+        /**
+         * execution
+         *
+         * @param p_agent agent
+         */
+        CExecution( final IBenchmarkAgent p_agent )
+        {
+            m_agent = p_agent;
+            m_pool.submit( this );
+        }
+
+        @Override
+        public final void run()
+        {
+            execute( m_agent );
+
+            if ( m_agent.active() )
+                m_pool.submit( this );
+        }
     }
 }
