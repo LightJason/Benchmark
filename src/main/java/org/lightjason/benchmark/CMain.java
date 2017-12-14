@@ -23,11 +23,9 @@
 
 package org.lightjason.benchmark;
 
-import org.apache.commons.io.IOUtils;
 import org.lightjason.agentspeak.agent.IAgent;
-import org.lightjason.benchmark.grammar.CFormularParser;
+import org.lightjason.benchmark.scenario.CScenario;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 import java.util.logging.LogManager;
@@ -59,18 +57,22 @@ public final class CMain
      * main method
      *
      * @param p_args command-line arguments
-     * @throws IOException parsing errors
+     * @throws Exception thrown on any error
      */
-    public static void main( final String[] p_args ) throws IOException
+    public static void main( final String[] p_args ) throws Exception
     {
+        if ( p_args.length != 1 )
+            throw new RuntimeException( "argument with scenario configuration must be set" );
+
         /*
         https://bl.ocks.org/mbostock/4061502
         http://bl.ocks.org/mbostock/3943967
         https://bl.ocks.org/mbostock/1256572
         http://square.github.io/crossfilter/
         */
-
-        System.out.println( new CFormularParser().apply( IOUtils.toInputStream( "(5+i)*2", "UTF-8" ) ).apply( 10 ) );
+        CScenario.build( p_args[0] )
+                 .call()
+                 .store( p_args[0].replace( ".yaml", "" ).replace( ".yml", "" ) + ".json" );
     }
 
     /*

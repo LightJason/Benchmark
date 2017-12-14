@@ -64,6 +64,13 @@
             <version>1.19</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.fasterxml.jackson.jaxrs</groupId>
+            <artifactId>jackson-jaxrs-json-provider</artifactId>
+            <version>2.9.3</version>
+        </dependency>
+
+
         <!-- unit-testing framework -->
         <dependency>
             <groupId>junit</groupId>

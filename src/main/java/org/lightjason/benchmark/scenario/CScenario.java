@@ -23,6 +23,7 @@
 
 package org.lightjason.benchmark.scenario;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.lightjason.agentspeak.action.IAction;
 import org.lightjason.agentspeak.common.CCommon;
@@ -43,6 +44,7 @@ import org.yaml.snakeyaml.Yaml;
 
 import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,8 +61,6 @@ import java.util.stream.Stream;
 
 /**
  * scenario
- *
- * @todo https://stackoverflow.com/questions/12807797/java-get-available-memory
  */
 public final class CScenario implements IScenario
 {
@@ -141,6 +141,19 @@ public final class CScenario implements IScenario
         return this;
     }
 
+    @Override
+    public final void store( @Nonnull final String p_filename )
+    {
+        try
+        {
+            new ObjectMapper().writeValue( new File( p_filename ), m_statistic.get() );
+        }
+        catch ( final IOException l_exception )
+        {
+            throw new UncheckedIOException( l_exception );
+        }
+    }
+
     /**
      * instantiate actions
      *
@@ -149,7 +162,7 @@ public final class CScenario implements IScenario
      */
     private Set<IAction> action( final INeighborhood p_agents )
     {
-        return m_statistic.starttimer( "action" ).stop(
+        return m_statistic.starttimer( "actioninitialize" ).stop(
             Collections.unmodifiableSet(
                 Stream.concat(
                     Stream.concat(
@@ -182,7 +195,7 @@ public final class CScenario implements IScenario
             final InputStream l_stream = new FileInputStream( p_asl );
         )
         {
-            return m_statistic.starttimer( "parser" ).stop( new CBenchmarkAgent.CGenerator(
+            return m_statistic.starttimer( "parsing" ).stop( new CBenchmarkAgent.CGenerator(
                 l_stream,
                 p_action,
                 p_variablebuilder,
@@ -195,6 +208,26 @@ public final class CScenario implements IScenario
             throw new RuntimeException( l_exception );
         }
     }
+
+    /**
+     * run a single iteration
+     *
+     * @param p_run run number
+     */
+    private void iteration( @Nonnegative int p_run )
+    {
+        final IStatistic.ITimer l_timer = m_statistic.starttimer( "execution" );
+        m_runtime.accept(
+            m_statistic.starttimer( "agentinitialize" ).stop(
+                m_agentdefinition.entrySet()
+                                 .parallelStream()
+                                 .flatMap( i -> i.getKey().generatemultiple( i.getValue().apply( p_run ).intValue() ) )
+                                 .collect( Collectors.toSet() )
+            )
+        );
+        l_timer.stop();
+    }
+
 
     /**
      * parse string formular
@@ -212,25 +245,6 @@ public final class CScenario implements IScenario
         {
             throw new UncheckedIOException( l_exception );
         }
-    }
-
-    /**
-     * run a single iteration
-     *
-     * @param p_run run number
-     */
-    private void iteration( @Nonnegative int p_run )
-    {
-        final IStatistic.ITimer l_timer = m_statistic.starttimer( "execution" );
-        m_runtime.accept(
-            m_statistic.starttimer( "agentgenerating" ).stop(
-                m_agentdefinition.entrySet()
-                                 .parallelStream()
-                                 .flatMap( i -> i.getKey().generatemultiple( i.getValue().apply( p_run ).intValue() ) )
-                                 .collect( Collectors.toSet() )
-            )
-        );
-        l_timer.stop();
     }
 
     /**
