@@ -35,7 +35,7 @@ import org.lightjason.agentspeak.language.fuzzy.IFuzzyValue;
 import org.lightjason.agentspeak.language.instantiable.plan.trigger.CTrigger;
 import org.lightjason.agentspeak.language.instantiable.plan.trigger.ITrigger;
 import org.lightjason.benchmark.agent.IBenchmarkAgent;
-import org.lightjason.benchmark.scenario.IAgentStorage;
+import org.lightjason.benchmark.neighborhood.INeighborhood;
 
 import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
@@ -66,7 +66,7 @@ public final class CBroadcastAction extends ICommunication
      *
      * @param p_agents agents
      */
-    public CBroadcastAction( final IAgentStorage p_agents )
+    public CBroadcastAction( final INeighborhood p_agents )
     {
         super( p_agents );
     }

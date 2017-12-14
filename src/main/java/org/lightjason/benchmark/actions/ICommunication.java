@@ -26,7 +26,7 @@ package org.lightjason.benchmark.actions;
 import org.lightjason.agentspeak.action.IBaseAction;
 import org.lightjason.agentspeak.language.instantiable.plan.trigger.CTrigger;
 import org.lightjason.agentspeak.language.instantiable.plan.trigger.ITrigger;
-import org.lightjason.benchmark.scenario.IAgentStorage;
+import org.lightjason.benchmark.neighborhood.INeighborhood;
 
 
 /**
@@ -57,14 +57,14 @@ public abstract class ICommunication extends IBaseAction
     /**
      * agent storage
      */
-    protected final IAgentStorage m_agents;
+    protected final INeighborhood m_agents;
 
     /**
      * ctor
      *
      * @param p_agents agents
      */
-    protected ICommunication( final IAgentStorage p_agents )
+    protected ICommunication( final INeighborhood p_agents )
     {
         m_agents = p_agents;
     }

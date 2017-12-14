@@ -1,5 +1,6 @@
 runtime:
     type: "asynchronized"
+    neighborhood: "leftright"
 
 agent:
     runs: 10

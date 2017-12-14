@@ -29,11 +29,11 @@ import org.lightjason.agentspeak.configuration.IAgentConfiguration;
 import org.lightjason.agentspeak.language.execution.IVariableBuilder;
 import org.lightjason.agentspeak.language.instantiable.IInstantiable;
 import org.lightjason.agentspeak.language.variable.IVariable;
+import org.lightjason.benchmark.neighborhood.INeighborhood;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.InputStream;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -57,9 +57,9 @@ public final class CBenchmarkAgent extends IBaseBenchmarkAgent
      * @param p_name name of the agent
      */
     private CBenchmarkAgent( @Nonnull final IAgentConfiguration<IBenchmarkAgent> p_configuration,
-                             @Nonnull final String p_name )
+                             @Nonnull final String p_name, @Nonnull final INeighborhood p_neighborhood )
     {
-        super( p_configuration, p_name );
+        super( p_configuration, p_name, p_neighborhood );
     }
 
 
@@ -75,18 +75,20 @@ public final class CBenchmarkAgent extends IBaseBenchmarkAgent
          *
          * @param p_stream ASL input stream
          * @param p_actions actions
-         * @param p_agents map with agents and names
+         * @param p_neighborhood neighborhood
          * @throws Exception on parsing error
          */
         public CGenerator( @Nonnull final InputStream p_stream, @Nonnull final Set<IAction> p_actions,
                            @Nonnull final IVariableBuilder p_variablebuilder,
-                           @Nonnull final List<IBenchmarkAgent> p_agents ) throws Exception
+                           @Nonnull final String p_basename,
+                           @Nonnull final INeighborhood p_neighborhood ) throws Exception
         {
             super(
                     p_stream,
                     p_actions,
                     p_variablebuilder,
-                    p_agents
+                    p_basename,
+                    p_neighborhood
             );
         }
 
@@ -94,15 +96,13 @@ public final class CBenchmarkAgent extends IBaseBenchmarkAgent
         @Override
         public final IBenchmarkAgent generatesingle( @Nullable final Object... p_data )
         {
-            /*
             return this.initializeagent(
                     new CBenchmarkAgent(
                             m_configuration,
-                            m_counter.getAndIncrement() )
+                            this.name(),
+                            m_neighborhood
                     )
             );
-            */
-            return null;
         }
 
     }

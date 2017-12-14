@@ -63,6 +63,13 @@ public final class CMain
      */
     public static void main( final String[] p_args ) throws IOException
     {
+        /*
+        https://bl.ocks.org/mbostock/4061502
+        http://bl.ocks.org/mbostock/3943967
+        https://bl.ocks.org/mbostock/1256572
+        http://square.github.io/crossfilter/
+        */
+
         System.out.println( new CFormularParser().apply( IOUtils.toInputStream( "(5+i)*2", "UTF-8" ) ).apply( 10 ) );
     }
 

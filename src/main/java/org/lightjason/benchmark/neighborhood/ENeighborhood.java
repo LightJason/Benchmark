@@ -21,40 +21,45 @@
  * @endcond
  */
 
-package org.lightjason.benchmark.scenario;
-
-import org.lightjason.benchmark.agent.IBenchmarkAgent;
+package org.lightjason.benchmark.neighborhood;
 
 import javax.annotation.Nonnull;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.stream.Stream;
+import java.util.Locale;
 
 
 /**
- * agent storage
+ * storage list
  */
-public interface IAgentStorage extends Function<String, IBenchmarkAgent>, Consumer<IBenchmarkAgent>
+public enum ENeighborhood
 {
-    /**
-     * build the neighbor structure
-     *
-     * @return self reference
-     */
-    @Nonnull
-    IAgentStorage buildneighbor();
-
-    @Nonnull
-    String left( @Nonnull final String p_id );
-
-    @Nonnull
-    String right( @Nonnull final String p_id );
+    LEFTRIGHT;
 
     /**
-     * returns agent stream
+     * create an agent storage
      *
-     * @return stream
+     * @return agent storage
      */
-    Stream<IBenchmarkAgent> stream();
+    public final INeighborhood build()
+    {
+        switch ( this )
+        {
+            case LEFTRIGHT:
+                return new CLeftRightNeighbor();
+
+            default:
+                throw new RuntimeException( "unknown storage" );
+        }
+    }
+
+    /**
+     * returns storage type
+     *
+     * @param p_name storage name
+     * @return storage type
+     */
+    public static ENeighborhood from( @Nonnull final String p_name )
+    {
+        return ENeighborhood.valueOf( p_name.toUpperCase( Locale.ROOT ) );
+    }
 
 }

@@ -24,24 +24,29 @@
 package org.lightjason.benchmark.agent;
 
 import org.lightjason.agentspeak.action.IAction;
+import org.lightjason.agentspeak.action.binding.IAgentAction;
+import org.lightjason.agentspeak.action.binding.IAgentActionFilter;
 import org.lightjason.agentspeak.agent.IBaseAgent;
 import org.lightjason.agentspeak.configuration.IAgentConfiguration;
 import org.lightjason.agentspeak.generator.IBaseAgentGenerator;
 import org.lightjason.agentspeak.language.execution.IVariableBuilder;
+import org.lightjason.benchmark.neighborhood.INeighborhood;
 
 import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 import java.io.InputStream;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 
 /**
  * abstract class to define an
  * agent with environment
  */
-
+@IAgentAction
 public abstract class IBaseBenchmarkAgent extends IBaseAgent<IBenchmarkAgent> implements IBenchmarkAgent
 {
     /**
@@ -52,6 +57,10 @@ public abstract class IBaseBenchmarkAgent extends IBaseAgent<IBenchmarkAgent> im
      * index of the agent
      */
     private final String m_identifier;
+    /**
+     * agent p_neighborhood
+     */
+    private final INeighborhood m_neighborhood;
 
     /**
      * ctor
@@ -59,31 +68,21 @@ public abstract class IBaseBenchmarkAgent extends IBaseAgent<IBenchmarkAgent> im
      * @param p_configuration agent configuration
      * @param p_id id of the agent
      */
-    protected IBaseBenchmarkAgent( @Nonnull final IAgentConfiguration<IBenchmarkAgent> p_configuration, @Nonnull final String p_id )
+    protected IBaseBenchmarkAgent( @Nonnull final IAgentConfiguration<IBenchmarkAgent> p_configuration, @Nonnull final String p_id,
+                                   @Nonnull final INeighborhood p_neighborhood
+    )
     {
         super( p_configuration );
         m_identifier = p_id;
+        m_neighborhood = p_neighborhood;
     }
 
+    @Nonnull
     @Override
     @Nonnegative
     public final String id()
     {
         return m_identifier;
-    }
-
-    @Nonnull
-    @Override
-    public final String left()
-    {
-        return null;
-    }
-
-    @Nonnull
-    @Override
-    public final String right()
-    {
-        return null;
     }
 
     @Override
@@ -104,6 +103,18 @@ public abstract class IBaseBenchmarkAgent extends IBaseAgent<IBenchmarkAgent> im
         return ( this.sleeping() ) || ( !this.runningplans().isEmpty() );
     }
 
+    /**
+     * agent action to get neighbours
+     *
+     * @param p_id filter id
+     * @return name list
+     */
+    @IAgentActionFilter
+    private List<String> neighbour( final String... p_id )
+    {
+        return m_neighborhood.neighbor( p_id ).collect( Collectors.toList() );
+    }
+
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
     /**
@@ -112,13 +123,17 @@ public abstract class IBaseBenchmarkAgent extends IBaseAgent<IBenchmarkAgent> im
     protected abstract static class IGenerator extends IBaseAgentGenerator<IBenchmarkAgent>
     {
         /**
-         * agent number counter
-         */
-        protected final AtomicInteger m_counter = new AtomicInteger();
-        /**
          * agent list
          */
-        private final List<IBenchmarkAgent> m_agents;
+        protected final INeighborhood m_neighborhood;
+        /**
+         * agent number counter
+         */
+        private final AtomicInteger m_counter = new AtomicInteger();
+        /**
+         * name of tha agents
+         */
+        private final String m_basename;
 
 
         /**
@@ -127,21 +142,45 @@ public abstract class IBaseBenchmarkAgent extends IBaseAgent<IBenchmarkAgent> im
          * @param p_stream ASL input stream
          * @param p_actions action stream
          * @param p_variablebuilder variable builder
-         * @param p_agents agent list
+         * @param p_basename base name
+         * @param p_neighborhood neighborhhod
          * @throws Exception on any error
          */
         protected IGenerator( @Nonnull final InputStream p_stream, @Nonnull final Set<IAction> p_actions,
                               @Nonnull final IVariableBuilder p_variablebuilder,
-                              @Nonnull final List<IBenchmarkAgent> p_agents ) throws Exception
+                              @Nonnull final String p_basename,
+                              @Nonnull final INeighborhood p_neighborhood ) throws Exception
         {
             super( p_stream,
                    p_actions,
                    p_variablebuilder
             );
 
-            m_agents = p_agents;
+            m_basename = p_basename;
+            m_neighborhood = p_neighborhood;
         }
 
+        /**
+         * returns a new agent name
+         *
+         * @return name
+         */
+        protected String name()
+        {
+            return MessageFormat.format( "{0}-{1}", m_basename, m_counter.getAndIncrement() );
+        }
+
+        @Override
+        public final int hashCode()
+        {
+            return m_basename.hashCode();
+        }
+
+        @Override
+        public final boolean equals( final Object p_object )
+        {
+            return ( p_object != null ) && ( p_object instanceof IGenerator ) && ( p_object.hashCode() == this.hashCode() );
+        }
 
         /**
          * initialize the agent for the simulation
@@ -152,7 +191,7 @@ public abstract class IBaseBenchmarkAgent extends IBaseAgent<IBenchmarkAgent> im
         @Nonnull
         protected final IBenchmarkAgent initializeagent( @Nonnull final IBenchmarkAgent p_agent )
         {
-            m_agents.add( p_agent );
+            m_neighborhood.accept( p_agent );
             return p_agent;
         }
 

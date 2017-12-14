@@ -49,19 +49,4 @@ public interface IBenchmarkAgent extends IAgent<IBenchmarkAgent>
     @Nonnull
     String id();
 
-    /**
-     * get the left neighbour
-     *
-     * @return index of the nighbour
-     */
-    @Nonnull
-    String left();
-
-    /**
-     * get the left neighbour
-     *
-     * @return index of the nighbour
-     */
-    @Nonnull
-    String right();
 }

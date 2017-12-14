@@ -35,6 +35,8 @@ import org.lightjason.benchmark.agent.CBenchmarkAgent;
 import org.lightjason.benchmark.agent.IBaseBenchmarkAgent;
 import org.lightjason.benchmark.agent.IBenchmarkAgent;
 import org.lightjason.benchmark.grammar.CFormularParser;
+import org.lightjason.benchmark.neighborhood.ENeighborhood;
+import org.lightjason.benchmark.neighborhood.INeighborhood;
 import org.lightjason.benchmark.runtime.ERuntime;
 import org.lightjason.benchmark.runtime.IRuntime;
 import org.yaml.snakeyaml.Yaml;
@@ -45,7 +47,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.util.Collections;
-import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -95,7 +97,7 @@ public final class CScenario implements IScenario
         m_warmup = p_configuration.<Number>getOrDefault( 0, "agent", "warmup" ).intValue();
 
         // agent storage
-        final IAgentStorage l_storage = new CAgentStorage();
+        final INeighborhood l_storage = ENeighborhood.from( p_configuration.getOrDefault( "", "runtime", "neighborhood" ) ).build();
 
 
         // action instantiation
@@ -134,7 +136,7 @@ public final class CScenario implements IScenario
      * @param p_agents agents
      * @return actions
      */
-    private Set<IAction> action( final IAgentStorage p_agents )
+    private Set<IAction> action( final INeighborhood p_agents )
     {
         return m_statistic.star( "action" ).stop(
             Collections.unmodifiableSet(
@@ -154,14 +156,20 @@ public final class CScenario implements IScenario
 
 
     private IAgentGenerator<IBenchmarkAgent> generator( @Nonnull final String p_asl, @Nonnull final Set<IAction> p_action,
-                                                        @Nonnull final IVariableBuilder p_variablebuilder, @Nonnull final List<IBenchmarkAgent> p_agents )
+                                                        @Nonnull final IVariableBuilder p_variablebuilder, @Nonnull final INeighborhood p_neighborhood )
     {
         try
         (
             final InputStream l_stream = new FileInputStream( p_asl );
         )
         {
-            return m_statistic.star( "parser" ).stop( new CBenchmarkAgent.CGenerator( l_stream, p_action, p_variablebuilder, p_agents ) );
+            return m_statistic.star( "parser" ).stop( new CBenchmarkAgent.CGenerator(
+                l_stream,
+                p_action,
+                p_variablebuilder,
+                p_asl.toLowerCase( Locale.ROOT ).replace( ".asl", "" ),
+                p_neighborhood
+            ) );
         }
         catch ( final Exception l_exception )
         {

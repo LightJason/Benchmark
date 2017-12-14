@@ -21,85 +21,44 @@
  * @endcond
  */
 
-package org.lightjason.benchmark.scenario;
+package org.lightjason.benchmark.neighborhood;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.lightjason.benchmark.agent.IBenchmarkAgent;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.IntStream;
+import javax.annotation.Nullable;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 
 /**
  * agent storage
  */
-public class CAgentStorage implements IAgentStorage
+public interface INeighborhood extends Function<String, IBenchmarkAgent>, Consumer<IBenchmarkAgent>
 {
     /**
-     * map with agent
+     * build the neighbor structure
+     *
+     * @return self reference
      */
-    private final Map<String, IBenchmarkAgent> m_agents = new ConcurrentHashMap<>();
+    @Nonnull
+    INeighborhood buildneighbor();
+
     /**
-     * neighbor structure
+     * returns the neighbours
+     *
+     * @param p_id optional ids
+     * @return stream of neighbours
      */
-    private final Map<String, Pair<String, String>> m_neighbor = new ConcurrentHashMap<>();
-
     @Nonnull
-    @Override
-    public final IAgentStorage buildneighbor()
-    {
-        m_neighbor.clear();
+    Stream<String> neighbor( @Nullable final String... p_id );
 
-        final List<String> l_neighbor = new ArrayList<>( m_agents.keySet() );
+    /**
+     * returns agent stream
+     *
+     * @return stream
+     */
+    Stream<IBenchmarkAgent> stream();
 
-        IntStream.range( 0, l_neighbor.size() )
-                 .parallel()
-                 .forEach( i ->  m_neighbor.put(
-                     l_neighbor.get( i ),
-                     new ImmutablePair<>(
-                         l_neighbor.get( i == 0 ? l_neighbor.size() - 1 : i - 1 ),
-                         l_neighbor.get( ( i + 1 ) % l_neighbor.size() )
-                     )
-                 ) );
-
-        return this;
-    }
-
-    @Nonnull
-    @Override
-    public String left( @Nonnull final String p_id )
-    {
-        return m_neighbor.get( p_id ).getLeft();
-    }
-
-    @Nonnull
-    @Override
-    public String right( @Nonnull final String p_id )
-    {
-        return null;
-    }
-
-    @Override
-    public final Stream<IBenchmarkAgent> stream()
-    {
-        return m_agents.values().stream();
-    }
-
-    @Override
-    public final void accept( final IBenchmarkAgent p_agent )
-    {
-        m_agents.putIfAbsent( p_agent.id(), p_agent );
-    }
-
-    @Override
-    public final IBenchmarkAgent apply( final String p_id )
-    {
-        return m_agents.get( p_id );
-    }
 }
