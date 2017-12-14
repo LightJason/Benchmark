@@ -55,6 +55,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Paths;
+import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
@@ -250,9 +251,9 @@ public final class CScenario implements IScenario
      */
     private void iteration( @Nonnegative int p_run )
     {
-        final IStatistic.ITimer l_timer = m_statistic.starttimer( "execution" );
+        final IStatistic.ITimer l_timer = m_statistic.starttimer( MessageFormat.format( "{0}-execution", p_run ) );
         m_runtime.accept(
-            m_statistic.starttimer( "agentinitialize" ).stop(
+            m_statistic.starttimer(  MessageFormat.format( "{0}-agentinitialize", p_run ) ).stop(
                 m_agentdefinition.entrySet()
                                  .parallelStream()
                                  .flatMap( i -> i.getKey().generatemultiple( i.getValue().apply( p_run ).intValue() ) )
