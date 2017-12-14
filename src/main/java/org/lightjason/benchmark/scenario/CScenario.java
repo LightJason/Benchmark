@@ -23,8 +23,13 @@
 
 package org.lightjason.benchmark.scenario;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.lightjason.agentspeak.action.IAction;
 import org.lightjason.agentspeak.common.CCommon;
 import org.lightjason.agentspeak.generator.IAgentGenerator;
@@ -165,7 +170,7 @@ public final class CScenario implements IScenario
     @Override
     public final IScenario call() throws Exception
     {
-        IntStream.range( 0, m_runs ).forEach( j -> IntStream.range( 0, m_iteration ).forEach( i -> this.iteration( j ) ) );
+        IntStream.rangeClosed( 1, m_runs ).forEach( j -> IntStream.range( 0, m_iteration ).forEach( i -> this.iteration( j ) ) );
         return this;
     }
 
@@ -174,7 +179,8 @@ public final class CScenario implements IScenario
     {
         try
         {
-            new ObjectMapper().writeValue( new File( p_filename ), m_statistic.get() );
+            new ObjectMapper().registerModules( new SimpleModule().addSerializer( new CStatisticSerializer(  ) ) )
+                              .writeValue( new File( p_filename ), m_statistic.get() );
         }
         catch ( final IOException l_exception )
         {
@@ -284,6 +290,64 @@ public final class CScenario implements IScenario
     public static IScenario build( @Nonnull final String p_file )
     {
         return new CScenario( p_file );
+    }
+
+    /**
+     * json object writer
+     */
+    private static class CStatisticSerializer extends StdSerializer<DescriptiveStatistics>
+    {
+        /**
+         * serial id
+         */
+        private static final long serialVersionUID = 1017456322556218672L;
+
+        /**
+         * ctor
+         */
+        CStatisticSerializer()
+        {
+            this( null );
+        }
+
+        /**
+         * ctor
+         *
+         * @param p_class class
+         */
+        CStatisticSerializer( final Class<DescriptiveStatistics> p_class )
+        {
+            super( p_class );
+        }
+
+        @Override
+        public final void serialize( final DescriptiveStatistics p_statistic, final JsonGenerator p_generator,
+                                     final SerializerProvider p_serializer ) throws IOException
+        {
+
+            p_generator.writeStartObject();
+            p_generator.writeNumberField( "geometricmean", p_statistic.getGeometricMean() );
+            p_generator.writeNumberField( "kurtosis", p_statistic.getKurtosis() );
+            p_generator.writeNumberField( "max", p_statistic.getMax() );
+            p_generator.writeNumberField( "mean", p_statistic.getMean() );
+            p_generator.writeNumberField( "min", p_statistic.getMin() );
+            p_generator.writeNumberField( "count", p_statistic.getN() );
+            p_generator.writeNumberField( "25-percentile", p_statistic.getPercentile( 25 ) );
+            p_generator.writeNumberField( "50-percentile", p_statistic.getPercentile( 50 ) );
+            p_generator.writeNumberField( "75-percentile", p_statistic.getPercentile( 75 ) );
+            p_generator.writeNumberField( "skewness", p_statistic.getSkewness() );
+            p_generator.writeNumberField( "standarddeviation",  p_statistic.getStandardDeviation() );
+            p_generator.writeNumberField( "sum", p_statistic.getSum() );
+            p_generator.writeNumberField( "variance", p_statistic.getVariance() );
+            p_generator.writeArrayFieldStart( "values" );
+            p_generator.writeArray(  p_statistic.getValues(), 0, p_statistic.getValues().length );
+            p_generator.writeEndArray();
+            p_generator.writeEndObject();
+
+
+
+        }
+
     }
 
 }
