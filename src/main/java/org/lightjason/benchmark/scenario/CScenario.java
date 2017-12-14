@@ -49,6 +49,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
@@ -92,16 +93,20 @@ public final class CScenario implements IScenario
 
     /**
      * instantiate scneario
+     *
+     * @param p_file file name
      */
-    private CScenario( @Nonnull final ITree p_configuration )
+    private CScenario( @Nonnull final String p_file )
     {
-        m_runs = p_configuration.<Number>getOrDefault( 0, "global", "runs" ).intValue();
-        m_iteration = p_configuration.<Number>getOrDefault( 0, "global", "iterations" ).intValue();
+        final ITree l_configuration = load( p_file );
 
-        m_warmup = p_configuration.<Number>getOrDefault( 0, "agent", "warmup" ).intValue();
+        m_runs = l_configuration.<Number>getOrDefault( 0, "global", "runs" ).intValue();
+        m_iteration = l_configuration.<Number>getOrDefault( 0, "global", "iterations" ).intValue();
 
-        m_runtime = ERuntime.from( p_configuration.getOrDefault( "", "runtime", "type" ) );
-        final INeighborhood l_neighborhood = ENeighborhood.from( p_configuration.getOrDefault( "", "runtime", "neighborhood" ) ).build();
+        m_warmup = l_configuration.<Number>getOrDefault( 0, "agent", "warmup" ).intValue();
+
+        m_runtime = ERuntime.from( l_configuration.getOrDefault( "", "runtime", "type" ) );
+        final INeighborhood l_neighborhood = ENeighborhood.from( l_configuration.getOrDefault( "", "runtime", "neighborhood" ) ).build();
 
 
         // action instantiation
@@ -111,7 +116,7 @@ public final class CScenario implements IScenario
         // create variable builder
         final IVariableBuilder l_variablebuilder = new CBenchmarkAgent.CVariableBuilder(
             Collections.unmodifiableSet(
-                p_configuration.<Map<String, Object>>getOrDefault( Collections.emptyMap(), "agent", "constant" )
+                l_configuration.<Map<String, Object>>getOrDefault( Collections.emptyMap(), "agent", "constant" )
                                .entrySet()
                                .parallelStream()
                                .map( i -> new CConstant<>( i.getKey(), i.getValue() ) )
@@ -121,17 +126,40 @@ public final class CScenario implements IScenario
 
 
         // agent generators
+        final String l_root = Paths.get( p_file ).getParent().toString();
         m_agentdefinition = Collections.unmodifiableMap(
-            p_configuration.<Map<String, Object>>getOrDefault( Collections.emptyMap(), "agent", "source" )
+            l_configuration.<Map<String, Object>>getOrDefault( Collections.emptyMap(), "agent", "source" )
                     .entrySet()
                     .parallelStream()
                     .collect(
                         Collectors.toMap(
-                            i -> this.generator( i.getKey(), l_action, l_variablebuilder, l_neighborhood ),
+                            i -> this.generator( Paths.get( l_root, i.getKey() ).toString(), l_action, l_variablebuilder, l_neighborhood ),
                             i -> parse( i.getValue().toString() )
                         ) )
         );
 
+    }
+
+    /**
+     * load configuration file
+     *
+     * @param p_file filename
+     * @return config tree
+     */
+    private static ITree load( @Nonnull final String p_file )
+    {
+        try
+            (
+                final InputStream l_stream = new FileInputStream( p_file )
+            )
+        {
+            return new ITree.CTree( new Yaml().load( l_stream ) );
+
+        }
+        catch ( final Exception l_exception )
+        {
+            throw new RuntimeException( l_exception );
+        }
     }
 
     @Override
@@ -255,18 +283,7 @@ public final class CScenario implements IScenario
      */
     public static IScenario build( @Nonnull final String p_file )
     {
-        try
-        (
-            final InputStream l_stream = new FileInputStream( p_file )
-        )
-        {
-            return new CScenario( new ITree.CTree( new Yaml().load( l_stream ) ) );
-
-        }
-        catch ( final Exception l_exception )
-        {
-            throw new RuntimeException( l_exception );
-        }
+        return new CScenario( p_file );
     }
 
 }

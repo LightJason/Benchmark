@@ -13,5 +13,4 @@ agent:
         count: 5
 
     source:
-        foo.asl: "i+5"
-        blub.asl: "i+10"
+        counting.asl: "i+5"
