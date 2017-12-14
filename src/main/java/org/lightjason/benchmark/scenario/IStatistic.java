@@ -25,6 +25,7 @@ package org.lightjason.benchmark.scenario;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
+import javax.annotation.Nonnull;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
@@ -35,13 +36,22 @@ import java.util.function.Supplier;
  */
 public interface IStatistic extends BiConsumer<String, Number>, Supplier<Map<String, DescriptiveStatistics>>
 {
+
+    /**
+     * clears a single statistic
+     *
+     * @param p_name name
+     * @return self reference
+     */
+    IStatistic clear( @Nonnull final String p_name );
+
     /**
      * starts a timer
      *
      * @param p_name name of the timer
      * @return timer
      */
-    ITimer star( final String p_name );
+    ITimer starttimer( final String p_name );
 
     /**
      * interface of a timer object

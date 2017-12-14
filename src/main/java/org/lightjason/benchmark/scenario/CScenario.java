@@ -81,7 +81,7 @@ public final class CScenario implements IScenario
     /**
      * map with asl pathes and generatoring functions
      */
-    private final Map<String, Function<Number, Number>> m_agentdefinition;
+    private final Map<IAgentGenerator<IBenchmarkAgent>, Function<Number, Number>> m_agentdefinition;
     /**
      * current run
      */
@@ -96,13 +96,13 @@ public final class CScenario implements IScenario
         m_runs = p_configuration.<Number>getOrDefault( 0, "agent", "runs" ).intValue();
         m_warmup = p_configuration.<Number>getOrDefault( 0, "agent", "warmup" ).intValue();
 
+
         // agent storage
-        final INeighborhood l_storage = ENeighborhood.from( p_configuration.getOrDefault( "", "runtime", "neighborhood" ) ).build();
+        final INeighborhood l_neighborhood = ENeighborhood.from( p_configuration.getOrDefault( "", "runtime", "neighborhood" ) ).build();
 
 
         // action instantiation
-        final Set<IAction> l_action = this.action( l_storage );
-
+        final Set<IAction> l_action = this.action( l_neighborhood );
 
 
         // create variable builder
@@ -117,16 +117,17 @@ public final class CScenario implements IScenario
         );
 
 
-
-
         // agent generators
         m_agentdefinition = Collections.unmodifiableMap(
             p_configuration.<Map<String, Object>>getOrDefault( Collections.emptyMap(), "agent", "source" )
                     .entrySet()
                     .parallelStream()
-                    .collect( Collectors.toMap( Map.Entry::getKey, i -> parse( i.getValue().toString() ) ) )
+                    .collect(
+                        Collectors.toMap(
+                            i -> this.generator( i.getKey(), l_action, l_variablebuilder, l_neighborhood ),
+                            i -> parse( i.getValue().toString() )
+                        ) )
         );
-
 
     }
 
@@ -138,7 +139,7 @@ public final class CScenario implements IScenario
      */
     private Set<IAction> action( final INeighborhood p_agents )
     {
-        return m_statistic.star( "action" ).stop(
+        return m_statistic.starttimer( "action" ).stop(
             Collections.unmodifiableSet(
                 Stream.concat(
                     Stream.concat(
@@ -154,7 +155,15 @@ public final class CScenario implements IScenario
         );
     }
 
-
+    /**
+     * instantiate agent generator
+     *
+     * @param p_asl asl file
+     * @param p_action action definition
+     * @param p_variablebuilder variable builder
+     * @param p_neighborhood neighborhood
+     * @return generator
+     */
     private IAgentGenerator<IBenchmarkAgent> generator( @Nonnull final String p_asl, @Nonnull final Set<IAction> p_action,
                                                         @Nonnull final IVariableBuilder p_variablebuilder, @Nonnull final INeighborhood p_neighborhood )
     {
@@ -163,7 +172,7 @@ public final class CScenario implements IScenario
             final InputStream l_stream = new FileInputStream( p_asl );
         )
         {
-            return m_statistic.star( "parser" ).stop( new CBenchmarkAgent.CGenerator(
+            return m_statistic.starttimer( "parser" ).stop( new CBenchmarkAgent.CGenerator(
                 l_stream,
                 p_action,
                 p_variablebuilder,
@@ -205,7 +214,6 @@ public final class CScenario implements IScenario
     @Override
     public final IScenario next()
     {
-        // running execution
 
         m_currentrun++;
         return this;

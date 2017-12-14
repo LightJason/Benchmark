@@ -26,6 +26,7 @@ package org.lightjason.benchmark.scenario;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.commons.math3.stat.descriptive.SynchronizedDescriptiveStatistics;
 
+import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -56,7 +57,17 @@ public final class CStatistic implements IStatistic
     }
 
     @Override
-    public final ITimer star( final String p_name )
+    public final IStatistic clear( @Nonnull final String p_name )
+    {
+        final DescriptiveStatistics l_statistic = m_statistic.get( p_name );
+        if ( l_statistic != null )
+            l_statistic.clear();
+
+        return this;
+    }
+
+    @Override
+    public final ITimer starttimer( final String p_name )
     {
         return new CTimer( p_name );
     }
