@@ -57,6 +57,7 @@ import java.io.UncheckedIOException;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -140,10 +141,22 @@ public final class CScenario implements IScenario
                     .collect(
                         Collectors.toMap(
                             i -> this.generator( Paths.get( l_root, i.getKey() ).toString(), l_action, l_variablebuilder, l_neighborhood ),
-                            i -> parse( i.getValue().toString() )
+                            i -> i.getValue() instanceof String ? parse( i.getValue().toString() ) : objecttolistfunction( i.getValue() )
                         ) )
         );
 
+    }
+
+    /**
+     * converts an object to a list with values
+     *
+     * @param p_object configuration object
+     * @return function
+     */
+    @SuppressWarnings( "unchecked" )
+    private static Function<Number, Number> objecttolistfunction( final Object p_object )
+    {
+        return i -> ( (List<Number>) p_object ).get( i.intValue() - 1 );
     }
 
     /**
