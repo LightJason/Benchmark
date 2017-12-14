@@ -25,7 +25,9 @@ package org.lightjason.benchmark.runtime;
 
 import org.lightjason.benchmark.agent.IBenchmarkAgent;
 
+import javax.annotation.Nonnull;
 import java.util.Collection;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -40,10 +42,21 @@ public final class CAsychronize extends IBaseRuntime
      */
     private final ExecutorService m_pool = Executors.newWorkStealingPool();
 
+
     @Override
     public final void accept( final Collection<IBenchmarkAgent> p_agents )
     {
-        p_agents.parallelStream().forEach( CExecution::new );
+        final CountDownLatch l_countdown = new CountDownLatch( p_agents.size() );
+        p_agents.parallelStream().forEach( i -> new CExecution( l_countdown, i ) );
+
+        try
+        {
+            l_countdown.await();
+        }
+        catch ( final InterruptedException l_exception )
+        {
+            throw new RuntimeException( l_exception );
+        }
     }
 
     /**
@@ -51,16 +64,25 @@ public final class CAsychronize extends IBaseRuntime
      */
     private final class CExecution implements Runnable
     {
+        /**
+         * referenced agent
+         */
         private final IBenchmarkAgent m_agent;
+        /**
+         * count down latch
+         */
+        private final CountDownLatch m_countdown;
 
         /**
          * execution
          *
+         * @param p_countdown for finializing
          * @param p_agent agent
          */
-        CExecution( final IBenchmarkAgent p_agent )
+        CExecution( @Nonnull final CountDownLatch p_countdown, @Nonnull final IBenchmarkAgent p_agent )
         {
             m_agent = p_agent;
+            m_countdown = p_countdown;
             m_pool.submit( this );
         }
 
@@ -71,6 +93,9 @@ public final class CAsychronize extends IBaseRuntime
 
             if ( m_agent.active() )
                 m_pool.submit( this );
+            else
+                m_countdown.countDown();
         }
     }
+
 }
