@@ -41,6 +41,7 @@ import org.lightjason.benchmark.runtime.ERuntime;
 import org.lightjason.benchmark.runtime.IRuntime;
 import org.yaml.snakeyaml.Yaml;
 
+import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -52,6 +53,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 
@@ -75,6 +77,10 @@ public final class CScenario implements IScenario
      */
     private final int m_runs;
     /**
+     * number of iterations on each run
+     */
+    private final int m_iteration;
+    /**
      * warum-up simulation steps
      */
     private final int m_warmup;
@@ -82,22 +88,19 @@ public final class CScenario implements IScenario
      * map with asl pathes and generatoring functions
      */
     private final Map<IAgentGenerator<IBenchmarkAgent>, Function<Number, Number>> m_agentdefinition;
-    /**
-     * current run
-     */
-    private int m_currentrun;
+
 
     /**
      * instantiate scneario
      */
     private CScenario( @Nonnull final ITree p_configuration )
     {
-        m_runtime = ERuntime.from( p_configuration.getOrDefault( "", "runtime", "type" ) );
-        m_runs = p_configuration.<Number>getOrDefault( 0, "agent", "runs" ).intValue();
+        m_runs = p_configuration.<Number>getOrDefault( 0, "global", "runs" ).intValue();
+        m_iteration = p_configuration.<Number>getOrDefault( 0, "global", "iterations" ).intValue();
+
         m_warmup = p_configuration.<Number>getOrDefault( 0, "agent", "warmup" ).intValue();
 
-
-        // agent storage
+        m_runtime = ERuntime.from( p_configuration.getOrDefault( "", "runtime", "type" ) );
         final INeighborhood l_neighborhood = ENeighborhood.from( p_configuration.getOrDefault( "", "runtime", "neighborhood" ) ).build();
 
 
@@ -129,6 +132,13 @@ public final class CScenario implements IScenario
                         ) )
         );
 
+    }
+
+    @Override
+    public final IScenario call() throws Exception
+    {
+        IntStream.range( 0, m_runs ).forEach( j -> IntStream.range( 0, m_iteration ).forEach( i -> this.iteration( j ) ) );
+        return this;
     }
 
     /**
@@ -204,19 +214,23 @@ public final class CScenario implements IScenario
         }
     }
 
-
-    @Override
-    public boolean hasNext()
+    /**
+     * run a single iteration
+     *
+     * @param p_run run number
+     */
+    private void iteration( @Nonnegative int p_run )
     {
-        return m_currentrun < m_runs;
-    }
-
-    @Override
-    public final IScenario next()
-    {
-
-        m_currentrun++;
-        return this;
+        final IStatistic.ITimer l_timer = m_statistic.starttimer( "execution" );
+        m_runtime.accept(
+            m_statistic.starttimer( "agentgenerating" ).stop(
+                m_agentdefinition.entrySet()
+                                 .parallelStream()
+                                 .flatMap( i -> i.getKey().generatemultiple( i.getValue().apply( p_run ).intValue() ) )
+                                 .collect( Collectors.toSet() )
+            )
+        );
+        l_timer.stop();
     }
 
     /**
@@ -232,7 +246,6 @@ public final class CScenario implements IScenario
             final InputStream l_stream = new FileInputStream( p_file )
         )
         {
-
             return new CScenario( new ITree.CTree( new Yaml().load( l_stream ) ) );
 
         }

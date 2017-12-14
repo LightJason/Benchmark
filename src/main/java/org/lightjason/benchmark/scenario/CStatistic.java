@@ -109,5 +109,11 @@ public final class CStatistic implements IStatistic
             return p_value;
         }
 
+        @Override
+        public final void stop()
+        {
+            this.stop( null );
+        }
+
     }
 }

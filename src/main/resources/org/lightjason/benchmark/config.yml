@@ -1,9 +1,12 @@
+global:
+    runs: 10
+    iterations: 5
+
 runtime:
     type: "asynchronized"
     neighborhood: "leftright"
 
 agent:
-    runs: 10
     warmup: 10
 
     constant:

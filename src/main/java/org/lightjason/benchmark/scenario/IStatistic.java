@@ -70,5 +70,10 @@ public interface IStatistic extends BiConsumer<String, Number>, Supplier<Map<Str
          * @return returns value
          */
         <T> T stop( final T p_value );
+
+        /**
+         * stops the timer
+         */
+        void stop();
     }
 }

@@ -23,13 +23,12 @@
 
 package org.lightjason.benchmark.scenario;
 
-import java.util.Iterator;
+import java.util.concurrent.Callable;
 
 
 /**
  * interface of an benchmarking scenario
  */
-public interface IScenario extends Iterator<IScenario>
+public interface IScenario extends Callable<IScenario>
 {
-
 }
