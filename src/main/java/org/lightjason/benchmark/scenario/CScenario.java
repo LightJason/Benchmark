@@ -105,8 +105,8 @@ public final class CScenario implements IScenario
     {
         final ITree l_configuration = load( p_file );
 
-        m_runs = l_configuration.<Number>getOrDefault( 0, "global", "runs" ).intValue();
-        m_iteration = l_configuration.<Number>getOrDefault( 0, "global", "iterations" ).intValue();
+        m_runs = l_configuration.<Number>getOrDefault( 1, "global", "runs" ).intValue();
+        m_iteration = l_configuration.<Number>getOrDefault( 1, "global", "iterations" ).intValue();
 
         m_warmup = l_configuration.<Number>getOrDefault( 0, "agent", "warmup" ).intValue();
 
@@ -179,7 +179,7 @@ public final class CScenario implements IScenario
     {
         try
         {
-            new ObjectMapper().registerModules( new SimpleModule().addSerializer( new CStatisticSerializer(  ) ) )
+            new ObjectMapper().registerModules( new SimpleModule().addSerializer( DescriptiveStatistics.class, new CStatisticSerializer(  ) ) )
                               .writeValue( new File( p_filename ), m_statistic.get() );
         }
         catch ( final IOException l_exception )
@@ -327,7 +327,8 @@ public final class CScenario implements IScenario
 
             p_generator.writeStartObject();
             p_generator.writeNumberField( "geometricmean", p_statistic.getGeometricMean() );
-            p_generator.writeNumberField( "kurtosis", p_statistic.getKurtosis() );
+            if ( !Double.isNaN( p_statistic.getKurtosis() ) )
+                p_generator.writeNumberField( "kurtosis", p_statistic.getKurtosis() );
             p_generator.writeNumberField( "max", p_statistic.getMax() );
             p_generator.writeNumberField( "mean", p_statistic.getMean() );
             p_generator.writeNumberField( "min", p_statistic.getMin() );
@@ -335,7 +336,8 @@ public final class CScenario implements IScenario
             p_generator.writeNumberField( "25-percentile", p_statistic.getPercentile( 25 ) );
             p_generator.writeNumberField( "50-percentile", p_statistic.getPercentile( 50 ) );
             p_generator.writeNumberField( "75-percentile", p_statistic.getPercentile( 75 ) );
-            p_generator.writeNumberField( "skewness", p_statistic.getSkewness() );
+            if ( !Double.isNaN( p_statistic.getSkewness() ) )
+                p_generator.writeNumberField( "skewness", p_statistic.getSkewness() );
             p_generator.writeNumberField( "standarddeviation",  p_statistic.getStandardDeviation() );
             p_generator.writeNumberField( "sum", p_statistic.getSum() );
             p_generator.writeNumberField( "variance", p_statistic.getVariance() );

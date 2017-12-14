@@ -1,6 +1,6 @@
 global:
-    runs: 10
-    iterations: 5
+    runs: 250
+    iterations: 10
 
 runtime:
     type: "asynchronized"
@@ -10,7 +10,7 @@ agent:
     warmup: 10
 
     constant:
-        count: 5
+        MaxCount: 5
 
     source:
-        counting.asl: "i+5"
+        counting.asl: "i*i"

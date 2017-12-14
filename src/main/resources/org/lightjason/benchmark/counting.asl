@@ -1,5 +1,11 @@
 !main.
 
 +!main <-
-    generic/print( "foo" )
+    !count( MaxCount )
+.
+
++!count(X)
+    : X > 0 <-
+        X--;
+        !count(X)
 .
