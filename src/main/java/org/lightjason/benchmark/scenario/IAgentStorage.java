@@ -21,47 +21,40 @@
  * @endcond
  */
 
-package org.lightjason.benchmark.agent;
+package org.lightjason.benchmark.scenario;
 
-import org.lightjason.agentspeak.agent.IAgent;
+import org.lightjason.benchmark.agent.IBenchmarkAgent;
 
 import javax.annotation.Nonnull;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 
 /**
- * interface of an benchmarking agent
+ * agent storage
  */
-public interface IBenchmarkAgent extends IAgent<IBenchmarkAgent>
+public interface IAgentStorage extends Function<String, IBenchmarkAgent>, Consumer<IBenchmarkAgent>
 {
-
     /**
-     * check if the agent ist active
+     * build the neighbor structure
      *
-     * @return active flag
-     */
-    boolean active();
-
-    /**
-     * returns unique agent identifier
-     *
-     * @return agent id
+     * @return self reference
      */
     @Nonnull
-    String id();
+    IAgentStorage buildneighbor();
+
+    @Nonnull
+    String left( @Nonnull final String p_id );
+
+    @Nonnull
+    String right( @Nonnull final String p_id );
 
     /**
-     * get the left neighbour
+     * returns agent stream
      *
-     * @return index of the nighbour
+     * @return stream
      */
-    @Nonnull
-    String left();
+    Stream<IBenchmarkAgent> stream();
 
-    /**
-     * get the left neighbour
-     *
-     * @return index of the nighbour
-     */
-    @Nonnull
-    String right();
 }

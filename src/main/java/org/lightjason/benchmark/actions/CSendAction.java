@@ -23,7 +23,6 @@
 
 package org.lightjason.benchmark.actions;
 
-import org.lightjason.agentspeak.agent.IAgent;
 import org.lightjason.agentspeak.common.CPath;
 import org.lightjason.agentspeak.common.IPath;
 import org.lightjason.agentspeak.language.CCommon;
@@ -36,6 +35,7 @@ import org.lightjason.agentspeak.language.fuzzy.IFuzzyValue;
 import org.lightjason.agentspeak.language.instantiable.plan.trigger.CTrigger;
 import org.lightjason.benchmark.agent.IBaseBenchmarkAgent;
 import org.lightjason.benchmark.agent.IBenchmarkAgent;
+import org.lightjason.benchmark.scenario.IAgentStorage;
 
 import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
@@ -63,7 +63,7 @@ public final class CSendAction extends ICommunication
      *
      * @param p_agents agents
      */
-    public CSendAction( final List<IBenchmarkAgent> p_agents )
+    public CSendAction( final IAgentStorage p_agents )
     {
         super( p_agents );
     }
@@ -91,8 +91,11 @@ public final class CSendAction extends ICommunication
         if ( l_arguments.size() < 2 )
             return CFuzzyValue.from( false );
 
-        final IAgent<?> l_receiver = m_agents.get( l_arguments.get( 0 ).<Number>raw().intValue() % m_agents.size() );
-        final ITerm l_sender = CLiteral.from( FROMFUNCTOR, CRawTerm.from( p_context.agent().<IBaseBenchmarkAgent>raw().index() ) );
+        final IBenchmarkAgent l_receiver = m_agents.apply( l_arguments.get( 0 ).<String>raw() );
+        if ( l_receiver == null )
+            return CFuzzyValue.from( false );
+
+        final ITerm l_sender = CLiteral.from( FROMFUNCTOR, CRawTerm.from( p_context.agent().<IBaseBenchmarkAgent>raw().id() ) );
         l_arguments.stream()
                    .skip( 1 )
                    .map( ITerm::raw )

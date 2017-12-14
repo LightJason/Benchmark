@@ -51,31 +51,45 @@ public abstract class IBaseBenchmarkAgent extends IBaseAgent<IBenchmarkAgent> im
     /**
      * index of the agent
      */
-    private final int m_index;
+    private final String m_identifier;
 
     /**
      * ctor
      *
      * @param p_configuration agent configuration
-     * @param p_index index of the agent
+     * @param p_id id of the agent
      */
-    protected IBaseBenchmarkAgent( @Nonnull final IAgentConfiguration<IBenchmarkAgent> p_configuration, @Nonnegative final int p_index )
+    protected IBaseBenchmarkAgent( @Nonnull final IAgentConfiguration<IBenchmarkAgent> p_configuration, @Nonnull final String p_id )
     {
         super( p_configuration );
-        m_index = p_index;
+        m_identifier = p_id;
     }
 
     @Override
     @Nonnegative
-    public final int index()
+    public final String id()
     {
-        return m_index;
+        return m_identifier;
+    }
+
+    @Nonnull
+    @Override
+    public final String left()
+    {
+        return null;
+    }
+
+    @Nonnull
+    @Override
+    public final String right()
+    {
+        return null;
     }
 
     @Override
     public final int hashCode()
     {
-        return m_index;
+        return m_identifier.hashCode();
     }
 
     @Override

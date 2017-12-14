@@ -30,7 +30,6 @@ import org.lightjason.agentspeak.language.execution.IVariableBuilder;
 import org.lightjason.agentspeak.language.instantiable.IInstantiable;
 import org.lightjason.agentspeak.language.variable.IVariable;
 
-import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.InputStream;
@@ -55,12 +54,12 @@ public final class CBenchmarkAgent extends IBaseBenchmarkAgent
      * constructor
      *
      * @param p_configuration agent configuration
-     * @param p_index index of the agent
+     * @param p_name name of the agent
      */
     private CBenchmarkAgent( @Nonnull final IAgentConfiguration<IBenchmarkAgent> p_configuration,
-                             @Nonnegative int p_index )
+                             @Nonnull final String p_name )
     {
-        super( p_configuration, p_index );
+        super( p_configuration, p_name );
     }
 
 

@@ -26,9 +26,7 @@ package org.lightjason.benchmark.actions;
 import org.lightjason.agentspeak.action.IBaseAction;
 import org.lightjason.agentspeak.language.instantiable.plan.trigger.CTrigger;
 import org.lightjason.agentspeak.language.instantiable.plan.trigger.ITrigger;
-import org.lightjason.benchmark.agent.IBenchmarkAgent;
-
-import java.util.List;
+import org.lightjason.benchmark.scenario.IAgentStorage;
 
 
 /**
@@ -57,16 +55,16 @@ public abstract class ICommunication extends IBaseAction
      */
     private static final long serialVersionUID = 1104268283747211370L;
     /**
-     * list agent objects
+     * agent storage
      */
-    protected final List<IBenchmarkAgent> m_agents;
+    protected final IAgentStorage m_agents;
 
     /**
      * ctor
      *
      * @param p_agents agents
      */
-    protected ICommunication( final List<IBenchmarkAgent> p_agents )
+    protected ICommunication( final IAgentStorage p_agents )
     {
         m_agents = p_agents;
     }

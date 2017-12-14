@@ -35,6 +35,7 @@ import org.lightjason.agentspeak.language.fuzzy.IFuzzyValue;
 import org.lightjason.agentspeak.language.instantiable.plan.trigger.CTrigger;
 import org.lightjason.agentspeak.language.instantiable.plan.trigger.ITrigger;
 import org.lightjason.benchmark.agent.IBenchmarkAgent;
+import org.lightjason.benchmark.scenario.IAgentStorage;
 
 import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
@@ -63,7 +64,7 @@ public final class CBroadcastAction extends ICommunication
      *
      * @param p_agents agents
      */
-    public CBroadcastAction( final List<IBenchmarkAgent> p_agents )
+    public CBroadcastAction( final IAgentStorage p_agents )
     {
         super( p_agents );
     }
@@ -88,7 +89,7 @@ public final class CBroadcastAction extends ICommunication
                                                @Nonnull final List<ITerm> p_argument, @Nonnull final List<ITerm> p_return )
     {
         final List<ITerm> l_arguments = CCommon.flatten( p_argument ).collect( Collectors.toList() );
-        final ITerm l_sender = CLiteral.from( FROMFUNCTOR, CRawTerm.from( p_context.agent().<IBenchmarkAgent>raw().index() ) );
+        final ITerm l_sender = CLiteral.from( FROMFUNCTOR, CRawTerm.from( p_context.agent().<IBenchmarkAgent>raw().id() ) );
         final List<ITrigger> l_trigger = l_arguments.parallelStream()
                                                     .map( ITerm::raw )
                                                     .map( CRawTerm::from )
@@ -98,7 +99,8 @@ public final class CBroadcastAction extends ICommunication
                                                     ) )
                                                     .collect( Collectors.toList() );
 
-        m_agents.parallelStream()
+        m_agents.stream()
+                .parallel()
                 .forEach( i -> l_trigger.forEach( j -> i.trigger( j ) ) );
 
         return CFuzzyValue.from( true );

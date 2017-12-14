@@ -55,6 +55,8 @@ import java.util.stream.Stream;
 
 /**
  * scenario
+ *
+ * @todo https://stackoverflow.com/questions/12807797/java-get-available-memory
  */
 public final class CScenario implements IScenario
 {
@@ -92,9 +94,12 @@ public final class CScenario implements IScenario
         m_runs = p_configuration.<Number>getOrDefault( 0, "agent", "runs" ).intValue();
         m_warmup = p_configuration.<Number>getOrDefault( 0, "agent", "warmup" ).intValue();
 
+        // agent storage
+        final IAgentStorage l_storage = new CAgentStorage();
+
 
         // action instantiation
-
+        final Set<IAction> l_action = this.action( l_storage );
 
 
 
@@ -129,7 +134,7 @@ public final class CScenario implements IScenario
      * @param p_agents agents
      * @return actions
      */
-    private Set<IAction> action( final List<IBenchmarkAgent> p_agents )
+    private Set<IAction> action( final IAgentStorage p_agents )
     {
         return m_statistic.star( "action" ).stop(
             Collections.unmodifiableSet(
@@ -139,8 +144,8 @@ public final class CScenario implements IScenario
                         CCommon.actionsFromAgentClass( IBaseBenchmarkAgent.class )
                     ),
                     Stream.of(
-                        new CBroadcastAction( null ),
-                        new CSendAction( null )
+                        new CBroadcastAction( p_agents ),
+                        new CSendAction( p_agents )
                     )
                 ).collect( Collectors.toSet() )
             )
