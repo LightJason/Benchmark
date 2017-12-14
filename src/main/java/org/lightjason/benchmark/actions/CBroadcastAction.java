@@ -40,6 +40,8 @@ import org.lightjason.benchmark.scenario.IAgentStorage;
 import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 import java.util.List;
+import java.util.Objects;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 
@@ -89,8 +91,13 @@ public final class CBroadcastAction extends ICommunication
                                                @Nonnull final List<ITerm> p_argument, @Nonnull final List<ITerm> p_return )
     {
         final List<ITerm> l_arguments = CCommon.flatten( p_argument ).collect( Collectors.toList() );
+        if ( l_arguments.size() < 2 )
+            return CFuzzyValue.from( false );
+
         final ITerm l_sender = CLiteral.from( FROMFUNCTOR, CRawTerm.from( p_context.agent().<IBenchmarkAgent>raw().id() ) );
-        final List<ITrigger> l_trigger = l_arguments.parallelStream()
+        final List<ITrigger> l_trigger = l_arguments.stream()
+                                                    .skip( 1 )
+                                                    .parallel()
                                                     .map( ITerm::raw )
                                                     .map( CRawTerm::from )
                                                     .map( i -> CTrigger.from(
@@ -99,8 +106,10 @@ public final class CBroadcastAction extends ICommunication
                                                     ) )
                                                     .collect( Collectors.toList() );
 
+        final Pattern l_regex = Pattern.compile( Objects.requireNonNull( l_arguments.get( 0 ).<String>raw() ) );
         m_agents.stream()
                 .parallel()
+                .filter( i -> l_regex.matcher( i.id() ).matches() )
                 .forEach( i -> l_trigger.forEach( j -> i.trigger( j ) ) );
 
         return CFuzzyValue.from( true );
