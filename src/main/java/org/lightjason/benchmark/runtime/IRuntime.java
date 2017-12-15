@@ -23,15 +23,17 @@
 
 package org.lightjason.benchmark.runtime;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.lightjason.benchmark.agent.IBenchmarkAgent;
+import org.lightjason.benchmark.scenario.IStatistic;
 
 import java.util.Collection;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 
 /**
  * runtime interface
  */
-public interface IRuntime extends Consumer<Collection<IBenchmarkAgent>>
+public interface IRuntime extends BiConsumer<Collection<IBenchmarkAgent>, Pair<String, IStatistic>>
 {
 }

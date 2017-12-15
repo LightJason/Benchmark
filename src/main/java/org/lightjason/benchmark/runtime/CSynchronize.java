@@ -24,8 +24,11 @@
 package org.lightjason.benchmark.runtime;
 
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.lightjason.benchmark.agent.IBenchmarkAgent;
+import org.lightjason.benchmark.scenario.IStatistic;
 
+import javax.annotation.Nonnull;
 import java.util.Collection;
 
 
@@ -36,10 +39,14 @@ public final class CSynchronize extends IBaseRuntime
 {
 
     @Override
-    public final void accept( final Collection<IBenchmarkAgent> p_agents )
+    public final void accept( @Nonnull final Collection<IBenchmarkAgent> p_agents, @Nonnull final Pair<String, IStatistic> p_statistic )
     {
+        final IStatistic.ITimer l_timer = p_statistic.getValue().starttimer( p_statistic.getLeft() );
+
         while ( p_agents.parallelStream().noneMatch( IBenchmarkAgent::active ) )
             p_agents.parallelStream().forEach( CSynchronize::execute );
+
+        l_timer.stop();
     }
 
 }

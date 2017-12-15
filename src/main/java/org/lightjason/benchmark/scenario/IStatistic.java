@@ -30,6 +30,7 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
@@ -40,6 +41,36 @@ import java.util.function.Supplier;
  */
 public interface IStatistic extends BiConsumer<String, Number>, Supplier<Map<String, DescriptiveStatistics>>
 {
+    /**
+     * empty statistic
+     */
+    IStatistic EMPTY = new IStatistic()
+    {
+        @Override
+        public final IStatistic clear( @Nonnull final String p_name )
+        {
+            return this;
+        }
+
+        @Override
+        public final ITimer starttimer( final String p_name )
+        {
+            return ITimer.EMPTY;
+        }
+
+        @Override
+        public final void accept( final String p_name, final Number p_number )
+        {
+
+        }
+
+        @Override
+        public final Map<String, DescriptiveStatistics> get()
+        {
+            return Collections.emptyMap();
+        }
+    };
+
 
     /**
      * clears a single statistic
@@ -57,11 +88,37 @@ public interface IStatistic extends BiConsumer<String, Number>, Supplier<Map<Str
      */
     ITimer starttimer( final String p_name );
 
+
+
     /**
      * interface of a timer object
      */
     interface ITimer
     {
+        /**
+         * empty time
+         */
+        ITimer EMPTY = new ITimer()
+        {
+            @Override
+            public final String name()
+            {
+                return "";
+            }
+
+            @Override
+            public final <T> T stop( final T p_value )
+            {
+                return p_value;
+            }
+
+            @Override
+            public final void stop()
+            {
+
+            }
+        };
+
         /**
          * name of the timer
          */

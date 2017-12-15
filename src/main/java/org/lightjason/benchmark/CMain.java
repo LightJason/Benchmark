@@ -23,14 +23,9 @@
 
 package org.lightjason.benchmark;
 
-import org.lightjason.agentspeak.agent.IAgent;
 import org.lightjason.benchmark.scenario.CScenario;
 
-import java.util.Collection;
-import java.util.concurrent.Callable;
 import java.util.logging.LogManager;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 
 /**

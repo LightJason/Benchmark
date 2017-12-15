@@ -23,14 +23,10 @@
 
 package org.lightjason.benchmark.scenario;
 
-import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.lightjason.agentspeak.action.IAction;
 import org.lightjason.agentspeak.common.CCommon;
 import org.lightjason.agentspeak.generator.IAgentGenerator;
@@ -59,6 +55,7 @@ import java.io.UncheckedIOException;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -194,10 +191,22 @@ public final class CScenario implements IScenario
     public final void store( @Nonnull final String p_filename )
     {
         Logger.info( "store measurement result in [{0}]", p_filename );
+
+        final Map<String, Object> l_configuration = new HashMap<>();
+        l_configuration.put( "runs", m_runs );
+        l_configuration.put( "iteration", m_iteration );
+        l_configuration.put( "warmup", m_warmup );
+        l_configuration.put( "runtime", m_runtime.toString() );
+
+        final Map<String, Object> l_result = new HashMap<>();
+        l_result.put( "time", m_statistic.get() );
+        l_result.put( "configuration", l_configuration );
+
         try
         {
-            new ObjectMapper().registerModules( new SimpleModule().addSerializer( IStatistic.CStatisticSerializer.CLASS, new IStatistic.CStatisticSerializer() ) )
-                              .writeValue( new File( p_filename ), m_statistic.get() );
+            new ObjectMapper().registerModules(
+                new SimpleModule().addSerializer( IStatistic.CStatisticSerializer.CLASS, new IStatistic.CStatisticSerializer() )
+            ).writeValue( new File( p_filename ), l_result );
         }
         catch ( final IOException l_exception )
         {
@@ -214,7 +223,7 @@ public final class CScenario implements IScenario
                      .forEach( j ->
                      {
                          Logger.info( "execute warum-up step [{0}]", j );
-                         IntStream.range( 0, m_iteration ).forEach( i -> this.iteration( j ) );
+                         IntStream.range( 0, m_iteration ).forEach( i -> this.warmup( j ) );
                      } );
 
         IntStream.rangeClosed( 1, m_runs )
@@ -292,16 +301,31 @@ public final class CScenario implements IScenario
      */
     private void iteration( @Nonnegative int p_run )
     {
-        final IStatistic.ITimer l_timer = m_statistic.starttimer( MessageFormat.format( "{0}-execution", String.format( m_numberpadding, p_run ) ) );
         m_runtime.accept(
             m_statistic.starttimer(  MessageFormat.format( "{0}-agentinitialize", String.format( m_numberpadding, p_run ) ) ).stop(
                 m_agentdefinition.entrySet()
                                  .parallelStream()
                                  .flatMap( i -> i.getKey().generatemultiple( i.getValue().apply( p_run ).intValue() ) )
                                  .collect( Collectors.toSet() )
-            )
+            ),
+            new ImmutablePair<>( MessageFormat.format( "{0}-execution", String.format( m_numberpadding, p_run ) ), m_statistic )
         );
-        l_timer.stop();
+    }
+
+    /**
+     * warm-up run
+     *
+     * @param p_run run number
+     */
+    private void warmup( @Nonnegative int p_run )
+    {
+        m_runtime.accept(
+            m_agentdefinition.entrySet()
+                             .parallelStream()
+                             .flatMap( i -> i.getKey().generatemultiple( i.getValue().apply( p_run ).intValue() ) )
+                             .collect( Collectors.toSet() ),
+            new ImmutablePair<>( MessageFormat.format( "{0}-execution", String.format( m_numberpadding, p_run ) ), IStatistic.EMPTY )
+        );
     }
 
 

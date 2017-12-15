@@ -23,7 +23,9 @@
 
 package org.lightjason.benchmark.runtime;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.lightjason.benchmark.agent.IBenchmarkAgent;
+import org.lightjason.benchmark.scenario.IStatistic;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
@@ -37,6 +39,7 @@ public enum ERuntime implements IRuntime
 {
     SYNCHRONIZED( new CSynchronize() ),
     ASYNCHRONIZED( new CAsychronize() );
+
     /**
      * runtime instance
      */
@@ -51,9 +54,10 @@ public enum ERuntime implements IRuntime
     }
 
     @Override
-    public final void accept( final Collection<IBenchmarkAgent> p_agents )
+    public final void accept( @Nonnull final Collection<IBenchmarkAgent> p_agents,
+                              @Nonnull final Pair<String, IStatistic> p_statistic )
     {
-        m_runtime.accept( p_agents );
+        m_runtime.accept( p_agents, p_statistic );
     }
 
     /**
@@ -67,4 +71,9 @@ public enum ERuntime implements IRuntime
         return ERuntime.valueOf( p_name.toUpperCase( Locale.ROOT ) );
     }
 
+    @Override
+    public final String toString()
+    {
+        return super.toString().toLowerCase( Locale.ROOT );
+    }
 }
