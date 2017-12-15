@@ -184,7 +184,12 @@ public final class CScenario implements IScenario
     @Override
     public final IScenario call() throws Exception
     {
-        IntStream.rangeClosed( 1, m_runs ).forEach( j -> IntStream.range( 0, m_iteration ).forEach( i -> this.iteration( j ) ) );
+        IntStream.rangeClosed( 1, m_runs )
+                 .forEach( j ->
+                 {
+                     System.out.println( MessageFormat.format( "execute run {0}", j ) );
+                     IntStream.range( 0, m_iteration ).forEach( i -> this.iteration( j ) );
+                 } );
         return this;
     }
 
