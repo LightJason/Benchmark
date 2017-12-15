@@ -1,0 +1,6 @@
+*.*
+!.gitignore
+!circle.yml
+!*.asl
+!*.yml
+
