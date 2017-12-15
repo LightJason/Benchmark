@@ -11,4 +11,4 @@ This repository contains a _benchmarking suite_ for the LightJason multi-agent f
 * [Heise - JMH: Microbenchmarking auf der Java Virtual Machine](https://www.heise.de/developer/artikel/JMH-Microbenchmarking-auf-der-Java-Virtual-Machine-2162093.html?seite=all)
 * [Jaxcenter - Aus der Java-Trickkiste: Microbenchmarking](https://jaxenter.de/aus-der-java-trickkiste-microbenchmarking-24155)
 
-For our scenario we are using our [example docker container](https://hub.docker.com/r/lightjason/examples/) with the shellcommand ```benchmark```, that allows to run the scenario defintion
+For our benchmark scenarios we are using our [docker container](https://hub.docker.com/r/lightjason/benchmark/) with the shellcommand ```benchmark```, that allows to run the scenario defintion
