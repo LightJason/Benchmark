@@ -23,18 +23,11 @@
 
 package org.lightjason.benchmark.scenario;
 
-import javax.annotation.Nonnull;
-import java.util.concurrent.Callable;
-
 
 /**
  * interface of an benchmarking scenario
  */
-public interface IScenario extends Callable<IScenario>
+public interface IScenario extends Runnable
 {
-    /**
-     * store th information
-     */
-    void store( @Nonnull final String p_filename );
 
 }

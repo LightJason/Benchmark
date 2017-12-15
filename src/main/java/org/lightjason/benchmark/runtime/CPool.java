@@ -31,19 +31,27 @@ import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 
 /**
  * asychronized execution
  */
-public final class CAsychronize extends IBaseRuntime
+public final class CPool extends IBaseRuntime
 {
     /**
      * stealing pool
      */
-    private final ExecutorService m_pool = Executors.newWorkStealingPool();
+    private final ExecutorService m_pool;
 
+    /**
+     * ctor
+     *
+     * @param p_pool thread-pool
+     */
+    public CPool( final ExecutorService p_pool )
+    {
+        m_pool = p_pool;
+    }
 
     @Override
     public final void accept( @Nonnull final Collection<IBenchmarkAgent> p_agents, @Nonnull final Pair<String, IStatistic> p_statistic )

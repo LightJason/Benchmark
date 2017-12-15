@@ -24,6 +24,7 @@
 package org.lightjason.benchmark.scenario;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -96,6 +97,14 @@ public final class CScenario implements IScenario
      */
     private final String m_numberpadding;
     /**
+     * result filename
+     */
+    private final String m_resultfilename;
+    /**
+     * serializing feature of json result
+     */
+    private final SerializationFeature m_serializationfeature;
+    /**
      * map with asl pathes and generatoring functions
      */
     private final Map<IAgentGenerator<IBenchmarkAgent>, Function<Number, Number>> m_agentdefinition;
@@ -110,13 +119,17 @@ public final class CScenario implements IScenario
     {
         final ITree l_configuration = load( p_file );
 
+        m_resultfilename = p_file.replace( ".yaml", "" ).replace( ".yml", "" ) + ".json";
         m_runs = l_configuration.<Number>getOrDefault( 1, "global", "runs" ).intValue();
         m_iteration = l_configuration.<Number>getOrDefault( 1, "global", "iterations" ).intValue();
         m_warmup = l_configuration.<Number>getOrDefault( 0, "global", "warmup" ).intValue();
+        m_serializationfeature = l_configuration.<Boolean>getOrDefault( false, "global", "prettyprint" )
+                                 ? SerializationFeature.INDENT_OUTPUT
+                                 : SerializationFeature.CLOSE_CLOSEABLE;
         m_numberpadding = "%0" + Math.max( String.valueOf( m_runs ).length(), String.valueOf( m_warmup ).length() ) + "d";
 
-
-        m_runtime = ERuntime.from( l_configuration.getOrDefault( "", "runtime", "type" ) );
+        m_runtime = ERuntime.from( l_configuration.getOrDefault( "", "runtime", "type" ) )
+                            .apply( l_configuration.<Number>getOrDefault( 1, "runtime", "value" ) );
         final INeighborhood l_neighborhood = ENeighborhood.from( l_configuration.getOrDefault( "", "runtime", "neighborhood" ) ).build();
 
 
@@ -187,16 +200,16 @@ public final class CScenario implements IScenario
         }
     }
 
-    @Override
-    public final void store( @Nonnull final String p_filename )
+    private void store()
     {
-        Logger.info( "store measurement result in [{0}]", p_filename );
+        Logger.info( "store measurement result in [{0}]", m_resultfilename );
 
         final Map<String, Object> l_configuration = new HashMap<>();
         l_configuration.put( "runs", m_runs );
         l_configuration.put( "iteration", m_iteration );
         l_configuration.put( "warmup", m_warmup );
         l_configuration.put( "runtime", m_runtime.toString() );
+        l_configuration.put( "processors", Runtime.getRuntime().availableProcessors() );
 
         final Map<String, Object> l_result = new HashMap<>();
         l_result.put( "time", m_statistic.get() );
@@ -204,9 +217,10 @@ public final class CScenario implements IScenario
 
         try
         {
-            new ObjectMapper().registerModules(
-                new SimpleModule().addSerializer( IStatistic.CStatisticSerializer.CLASS, new IStatistic.CStatisticSerializer() )
-            ).writeValue( new File( p_filename ), l_result );
+            new ObjectMapper()
+                .enable( m_serializationfeature )
+                .registerModules( new SimpleModule().addSerializer( IStatistic.CStatisticSerializer.CLASS, new IStatistic.CStatisticSerializer() ) )
+                .writeValue( new File( m_resultfilename ), l_result );
         }
         catch ( final IOException l_exception )
         {
@@ -216,7 +230,7 @@ public final class CScenario implements IScenario
     }
 
     @Override
-    public final IScenario call() throws Exception
+    public final void run()
     {
         if ( m_warmup > 0 )
             IntStream.rangeClosed( 1, m_warmup )
@@ -231,9 +245,8 @@ public final class CScenario implements IScenario
                  {
                      Logger.info( "execute iteration step [{0}]", j );
                      IntStream.range( 0, m_iteration ).forEach( i -> this.iteration( j ) );
+                     this.store(  );
                  } );
-
-        return this;
     }
 
     /**

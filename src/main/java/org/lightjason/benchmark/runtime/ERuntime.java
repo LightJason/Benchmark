@@ -23,41 +23,53 @@
 
 package org.lightjason.benchmark.runtime;
 
-import org.apache.commons.lang3.tuple.Pair;
-import org.lightjason.benchmark.agent.IBenchmarkAgent;
-import org.lightjason.benchmark.scenario.IStatistic;
-
 import javax.annotation.Nonnull;
-import java.util.Collection;
+import java.text.MessageFormat;
 import java.util.Locale;
+import java.util.concurrent.Executors;
+import java.util.function.Function;
 
 
 /**
  * runtime
  */
-public enum ERuntime implements IRuntime
+public enum ERuntime implements Function<Number, IRuntime>
 {
-    SYNCHRONIZED( new CSynchronize() ),
-    ASYNCHRONIZED( new CAsychronize() );
+    SYNCHRONIZED,
+    WORKSTEALING,
+    FIXEDSIZE,
+    CACHED,
+    SCHEDULED,
+    SINGLE;
 
-    /**
-     * runtime instance
-     */
-    private final IRuntime m_runtime;
 
-    /**
-     * @param p_runtime runtime
-     */
-    ERuntime( final IRuntime p_runtime )
-    {
-        m_runtime = p_runtime;
-    }
 
     @Override
-    public final void accept( @Nonnull final Collection<IBenchmarkAgent> p_agents,
-                              @Nonnull final Pair<String, IStatistic> p_statistic )
+    public final IRuntime apply( final Number p_number )
     {
-        m_runtime.accept( p_agents, p_statistic );
+        switch ( this )
+        {
+            case SYNCHRONIZED:
+                return new CSynchronize();
+
+            case WORKSTEALING:
+                return new CPool( Executors.newWorkStealingPool() );
+
+            case FIXEDSIZE:
+                return new CPool( Executors.newFixedThreadPool( p_number.intValue() ) );
+
+            case CACHED:
+                return new CPool( Executors.newCachedThreadPool() );
+
+            case SCHEDULED:
+                return new CPool( Executors.newScheduledThreadPool( p_number.intValue() ) );
+
+            case SINGLE:
+                return new CPool( Executors.newSingleThreadExecutor() );
+
+            default:
+                throw new RuntimeException( MessageFormat.format( "unknown runtime definition [{0}]", this ) );
+        }
     }
 
     /**
@@ -66,7 +78,7 @@ public enum ERuntime implements IRuntime
      * @param p_name name
      * @return runtime instance
      */
-    public static IRuntime from( @Nonnull final String p_name )
+    public static ERuntime from( @Nonnull final String p_name )
     {
         return ERuntime.valueOf( p_name.toUpperCase( Locale.ROOT ) );
     }

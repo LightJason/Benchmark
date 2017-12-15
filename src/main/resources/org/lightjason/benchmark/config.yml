@@ -1,11 +1,13 @@
 global:
-    runs: 10
+    runs: 16
     warmup: 4
-    iterations: 1
+    iterations: 5
+    prettyprint: true
 
 runtime:
-    type: "asynchronized"
-    neighborhood: "leftright"
+    type: fixedsize
+    value: 8
+    neighborhood: leftright
 
 agent:
     constant:

@@ -30,6 +30,9 @@ import java.util.logging.LogManager;
 
 /**
  * main application with runtime
+ *
+ * @todo java -jar -XX:+UseConcMarkSweepGC -Xmx3584M
+ * @todo https://stackoverflow.com/questions/21163108/custom-thread-pool-in-java-8-parallel-stream
  */
 public final class CMain
 {
@@ -65,9 +68,7 @@ public final class CMain
         https://bl.ocks.org/mbostock/1256572
         http://square.github.io/crossfilter/
         */
-        CScenario.build( p_args[0] )
-                 .call()
-                 .store( p_args[0].replace( ".yaml", "" ).replace( ".yml", "" ) + ".json" );
+        CScenario.build( p_args[0] ).run();
     }
 
 }
