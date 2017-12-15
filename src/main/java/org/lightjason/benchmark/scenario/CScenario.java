@@ -29,6 +29,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.lightjason.agentspeak.action.IAction;
 import org.lightjason.agentspeak.common.CCommon;
@@ -45,6 +46,7 @@ import org.lightjason.benchmark.neighborhood.ENeighborhood;
 import org.lightjason.benchmark.neighborhood.INeighborhood;
 import org.lightjason.benchmark.runtime.ERuntime;
 import org.lightjason.benchmark.runtime.IRuntime;
+import org.pmw.tinylog.Logger;
 import org.yaml.snakeyaml.Yaml;
 
 import javax.annotation.Nonnegative;
@@ -93,6 +95,10 @@ public final class CScenario implements IScenario
      */
     private final int m_warmup;
     /**
+     * number padding
+     */
+    private final String m_numberpadding;
+    /**
      * map with asl pathes and generatoring functions
      */
     private final Map<IAgentGenerator<IBenchmarkAgent>, Function<Number, Number>> m_agentdefinition;
@@ -109,8 +115,9 @@ public final class CScenario implements IScenario
 
         m_runs = l_configuration.<Number>getOrDefault( 1, "global", "runs" ).intValue();
         m_iteration = l_configuration.<Number>getOrDefault( 1, "global", "iterations" ).intValue();
+        m_warmup = l_configuration.<Number>getOrDefault( 0, "global", "warmup" ).intValue();
+        m_numberpadding = "%0" + Math.max( String.valueOf( m_runs ).length(), String.valueOf( m_warmup ).length() ) + "d";
 
-        m_warmup = l_configuration.<Number>getOrDefault( 0, "agent", "warmup" ).intValue();
 
         m_runtime = ERuntime.from( l_configuration.getOrDefault( "", "runtime", "type" ) );
         final INeighborhood l_neighborhood = ENeighborhood.from( l_configuration.getOrDefault( "", "runtime", "neighborhood" ) ).build();
@@ -167,6 +174,7 @@ public final class CScenario implements IScenario
      */
     private static ITree load( @Nonnull final String p_file )
     {
+        Logger.info( "read configuration file [{0}]", p_file );
         try
             (
                 final InputStream l_stream = new FileInputStream( p_file )
@@ -177,34 +185,46 @@ public final class CScenario implements IScenario
         }
         catch ( final Exception l_exception )
         {
+            Logger.error( "error on file reading [{0}]", l_exception.getMessage() );
             throw new RuntimeException( l_exception );
+        }
+    }
+
+    @Override
+    public final void store( @Nonnull final String p_filename )
+    {
+        Logger.info( "store measurement result in [{0}]", p_filename );
+        try
+        {
+            new ObjectMapper().registerModules( new SimpleModule().addSerializer( IStatistic.CStatisticSerializer.CLASS, new IStatistic.CStatisticSerializer() ) )
+                              .writeValue( new File( p_filename ), m_statistic.get() );
+        }
+        catch ( final IOException l_exception )
+        {
+            Logger.error( "error on storing [{0}]", l_exception.getMessage() );
+            throw new UncheckedIOException( l_exception );
         }
     }
 
     @Override
     public final IScenario call() throws Exception
     {
+        if ( m_warmup > 0 )
+            IntStream.rangeClosed( 1, m_warmup )
+                     .forEach( j ->
+                     {
+                         Logger.info( "execute warum-up step [{0}]", j );
+                         IntStream.range( 0, m_iteration ).forEach( i -> this.iteration( j ) );
+                     } );
+
         IntStream.rangeClosed( 1, m_runs )
                  .forEach( j ->
                  {
-                     System.out.println( MessageFormat.format( "execute run {0}", j ) );
+                     Logger.info( "execute iteration step [{0}]", j );
                      IntStream.range( 0, m_iteration ).forEach( i -> this.iteration( j ) );
                  } );
-        return this;
-    }
 
-    @Override
-    public final void store( @Nonnull final String p_filename )
-    {
-        try
-        {
-            new ObjectMapper().registerModules( new SimpleModule().addSerializer( DescriptiveStatistics.class, new CStatisticSerializer(  ) ) )
-                              .writeValue( new File( p_filename ), m_statistic.get() );
-        }
-        catch ( final IOException l_exception )
-        {
-            throw new UncheckedIOException( l_exception );
-        }
+        return this;
     }
 
     /**
@@ -215,6 +235,7 @@ public final class CScenario implements IScenario
      */
     private Set<IAction> action( final INeighborhood p_agents )
     {
+        Logger.info( "initialize actions" );
         return m_statistic.starttimer( "actioninitialize" ).stop(
             Collections.unmodifiableSet(
                 Stream.concat(
@@ -243,6 +264,7 @@ public final class CScenario implements IScenario
     private IAgentGenerator<IBenchmarkAgent> generator( @Nonnull final String p_asl, @Nonnull final Set<IAction> p_action,
                                                         @Nonnull final IVariableBuilder p_variablebuilder, @Nonnull final INeighborhood p_neighborhood )
     {
+        Logger.info( "reading asl file [{0}]", p_asl );
         try
         (
             final InputStream l_stream = new FileInputStream( p_asl );
@@ -258,6 +280,7 @@ public final class CScenario implements IScenario
         }
         catch ( final Exception l_exception )
         {
+            Logger.error( "error on reading asl file [{0}]", l_exception.getMessage() );
             throw new RuntimeException( l_exception );
         }
     }
@@ -269,9 +292,9 @@ public final class CScenario implements IScenario
      */
     private void iteration( @Nonnegative int p_run )
     {
-        final IStatistic.ITimer l_timer = m_statistic.starttimer( MessageFormat.format( "{0}-execution", p_run ) );
+        final IStatistic.ITimer l_timer = m_statistic.starttimer( MessageFormat.format( "{0}-execution", String.format( m_numberpadding, p_run ) ) );
         m_runtime.accept(
-            m_statistic.starttimer(  MessageFormat.format( "{0}-agentinitialize", p_run ) ).stop(
+            m_statistic.starttimer(  MessageFormat.format( "{0}-agentinitialize", String.format( m_numberpadding, p_run ) ) ).stop(
                 m_agentdefinition.entrySet()
                                  .parallelStream()
                                  .flatMap( i -> i.getKey().generatemultiple( i.getValue().apply( p_run ).intValue() ) )
@@ -290,12 +313,14 @@ public final class CScenario implements IScenario
      */
     private static Function<Number, Number> parse( @Nonnull final String p_formular )
     {
+        Logger.info( "parsing agent number formular [{0}]", p_formular );
         try
         {
             return new CFormularParser().apply( IOUtils.toInputStream( p_formular, "UTF-8" ) );
         }
         catch ( final IOException l_exception )
         {
+            Logger.error( "parsing error on formular [{0}]", p_formular );
             throw new UncheckedIOException( l_exception );
         }
     }
@@ -309,66 +334,6 @@ public final class CScenario implements IScenario
     public static IScenario build( @Nonnull final String p_file )
     {
         return new CScenario( p_file );
-    }
-
-    /**
-     * json object writer
-     */
-    private static class CStatisticSerializer extends StdSerializer<DescriptiveStatistics>
-    {
-        /**
-         * serial id
-         */
-        private static final long serialVersionUID = 1017456322556218672L;
-
-        /**
-         * ctor
-         */
-        CStatisticSerializer()
-        {
-            this( null );
-        }
-
-        /**
-         * ctor
-         *
-         * @param p_class class
-         */
-        CStatisticSerializer( final Class<DescriptiveStatistics> p_class )
-        {
-            super( p_class );
-        }
-
-        @Override
-        public final void serialize( final DescriptiveStatistics p_statistic, final JsonGenerator p_generator,
-                                     final SerializerProvider p_serializer ) throws IOException
-        {
-
-            p_generator.writeStartObject();
-            p_generator.writeNumberField( "geometricmean", p_statistic.getGeometricMean() );
-            if ( !Double.isNaN( p_statistic.getKurtosis() ) )
-                p_generator.writeNumberField( "kurtosis", p_statistic.getKurtosis() );
-            p_generator.writeNumberField( "max", p_statistic.getMax() );
-            p_generator.writeNumberField( "mean", p_statistic.getMean() );
-            p_generator.writeNumberField( "min", p_statistic.getMin() );
-            p_generator.writeNumberField( "count", p_statistic.getN() );
-            p_generator.writeNumberField( "25-percentile", p_statistic.getPercentile( 25 ) );
-            p_generator.writeNumberField( "50-percentile", p_statistic.getPercentile( 50 ) );
-            p_generator.writeNumberField( "75-percentile", p_statistic.getPercentile( 75 ) );
-            if ( !Double.isNaN( p_statistic.getSkewness() ) )
-                p_generator.writeNumberField( "skewness", p_statistic.getSkewness() );
-            p_generator.writeNumberField( "standarddeviation",  p_statistic.getStandardDeviation() );
-            p_generator.writeNumberField( "sum", p_statistic.getSum() );
-            p_generator.writeNumberField( "variance", p_statistic.getVariance() );
-            p_generator.writeArrayFieldStart( "values" );
-            p_generator.writeArray(  p_statistic.getValues(), 0, p_statistic.getValues().length );
-            p_generator.writeEndArray();
-            p_generator.writeEndObject();
-
-
-
-        }
-
     }
 
 }

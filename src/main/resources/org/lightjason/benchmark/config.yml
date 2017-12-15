@@ -1,5 +1,6 @@
 global:
-    runs: 16
+    runs: 10
+    warmup: 4
     iterations: 1
 
 runtime:
@@ -7,8 +8,6 @@ runtime:
     neighborhood: "leftright"
 
 agent:
-    warmup: 10
-
     constant:
         MaxCount: 5
 

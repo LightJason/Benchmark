@@ -27,11 +27,62 @@
     <packaging>jar</packaging>
     <version>1.0-SNAPSHOT</version>
 
-    <!-- project meta information -->
-    <name>benchmark</name>
-    
-    
 
+    <!-- project meta information -->
+    <name>LightJason Benchmark</name>
+    <description>LightJason benchmark suite for exploring multi-agent systems execution behaviour</description>
+    <url>https://github.com/LightJason/Benchmark</url>
+
+    <organization>
+        <name>LightJason</name>
+        <url>http://lightjason.org</url>
+    </organization>
+
+    <licenses>
+        <license>
+            <name>GNU Lesser General Public License 3</name>
+            <url>http://www.gnu.org/licenses/lgpl-3.0.en.html</url>
+        </license>
+    </licenses>
+
+    <issueManagement>
+        <system>GitHub Issues</system>
+        <url>https://github.com/LightJason/Benchmark/issues</url>
+    </issueManagement>
+
+    <scm>
+        <url>https://github.com/LightJason/Benchmark</url>
+        <connection>scm:git:git://github.com:LightJason/Benchmark.git</connection>
+        <developerConnection>scm:git:git@github.com:LightJason/Benchmark.git</developerConnection>
+        <tag>${project.artifactId}-${project.version}</tag>
+    </scm>
+
+    <developers>
+        <developer>
+            <id>flashpixx</id>
+            <name>Philipp Kraus</name>
+            <email>philipp@lightjason.org</email>
+            <timezone>Europe/Berlin</timezone>
+            <roles>
+                <role>architect</role>
+                <role>developer</role>
+            </roles>
+        </developer>
+    </developers>
+
+    <contributors>
+        <contributor>
+            <name>Malte Aschermann</name>
+            <email>malte@lightjason.org</email>
+            <timezone>Europe/Berlin</timezone>
+            <roles>
+                <role>tester</role>
+            </roles>
+        </contributor>
+    </contributors>
+
+
+    <!-- project build configuration -->
     <prerequisites>
         <maven>3.1</maven>
     </prerequisites>
@@ -69,6 +120,13 @@
             <artifactId>jackson-jaxrs-json-provider</artifactId>
             <version>2.9.3</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.tinylog</groupId>
+            <artifactId>tinylog</artifactId>
+            <version>1.3.1</version>
+        </dependency>
+
 
 
         <!-- unit-testing framework -->
@@ -335,6 +393,7 @@
                         <headerDefinition>src/analysis/license/style.xml</headerDefinition>
                     </headerDefinitions>
                     <excludes>
+                        <exclude>Dockerfile</exclude>
                         <exclude>**/*.txt</exclude>
                         <exclude>**/*.yml</exclude>
                         <exclude>**/*.md</exclude>

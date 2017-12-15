@@ -6,6 +6,7 @@
 !*.g4
 !*.md
 !*.java
+!*.properties
 
 !src/main/resources/**/*.yml
 !src/main/resources/**/*.asl
