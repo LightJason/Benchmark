@@ -50,22 +50,22 @@ public enum ERuntime implements Function<Number, IRuntime>
         switch ( this )
         {
             case SYNCHRONIZED:
-                return new CSynchronize();
+                return new CSynchronize( this, p_number.intValue() );
 
             case WORKSTEALING:
-                return new CPool( Executors.newWorkStealingPool() );
+                return new CPool( this, p_number.intValue(), Executors.newWorkStealingPool() );
 
             case FIXEDSIZE:
-                return new CPool( Executors.newFixedThreadPool( p_number.intValue() ) );
+                return new CPool( this, p_number.intValue(), Executors.newFixedThreadPool( p_number.intValue() ) );
 
             case CACHED:
-                return new CPool( Executors.newCachedThreadPool() );
+                return new CPool( this, p_number.intValue(), Executors.newCachedThreadPool() );
 
             case SCHEDULED:
-                return new CPool( Executors.newScheduledThreadPool( p_number.intValue() ) );
+                return new CPool( this, p_number.intValue(), Executors.newScheduledThreadPool( p_number.intValue() ) );
 
             case SINGLE:
-                return new CPool( Executors.newSingleThreadExecutor() );
+                return new CPool( this, p_number.intValue(), Executors.newSingleThreadExecutor() );
 
             default:
                 throw new RuntimeException( MessageFormat.format( "unknown runtime definition [{0}]", this ) );

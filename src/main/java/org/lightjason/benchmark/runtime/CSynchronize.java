@@ -38,6 +38,17 @@ import java.util.Collection;
 public final class CSynchronize extends IBaseRuntime
 {
 
+    /**
+     * ctor
+     *
+     * @param p_type runtime type
+     * @param p_value runtime value
+     */
+    public CSynchronize( @Nonnull final ERuntime p_type, final int p_value )
+    {
+        super( p_type, p_value );
+    }
+
     @Override
     public final void accept( @Nonnull final Collection<IBenchmarkAgent> p_agents, @Nonnull final Pair<String, IStatistic> p_statistic )
     {

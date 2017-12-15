@@ -5,8 +5,7 @@ global:
     prettyprint: true
 
 runtime:
-    type: fixedsize
-    value: 8
+    type: synchronized
     neighborhood: leftright
 
 agent:

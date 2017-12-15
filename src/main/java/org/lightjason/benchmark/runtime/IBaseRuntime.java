@@ -25,12 +25,42 @@ package org.lightjason.benchmark.runtime;
 
 import org.lightjason.benchmark.agent.IBenchmarkAgent;
 
+import javax.annotation.Nonnegative;
+import javax.annotation.Nonnull;
+import java.text.MessageFormat;
+
 
 /**
  * base runtime structure
  */
 public abstract class IBaseRuntime implements IRuntime
 {
+    /**
+     * runtime type
+     */
+    private final ERuntime m_type;
+    /**
+     * value of the pool
+     */
+    private final int m_value;
+
+    /**
+     * ctor
+     *
+     * @param p_type runtime type
+     * @param p_value runtime value
+     */
+    protected IBaseRuntime( @Nonnull final ERuntime p_type, @Nonnegative final int p_value )
+    {
+        m_type = p_type;
+        m_value = p_value;
+    }
+
+    @Override
+    public final String toString()
+    {
+        return MessageFormat.format( "{0} ({1})", m_type, m_value );
+    }
 
     /**
      * agent execution

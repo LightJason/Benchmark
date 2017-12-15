@@ -27,6 +27,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.lightjason.benchmark.agent.IBenchmarkAgent;
 import org.lightjason.benchmark.scenario.IStatistic;
 
+import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
@@ -46,12 +47,16 @@ public final class CPool extends IBaseRuntime
     /**
      * ctor
      *
-     * @param p_pool thread-pool
+     * @param p_type runtime type
+     * @param p_value runtime value
      */
-    public CPool( final ExecutorService p_pool )
+    public CPool( @Nonnull final ERuntime p_type, @Nonnegative final int p_value, @Nonnull final ExecutorService p_pool )
     {
+        super( p_type, p_value );
         m_pool = p_pool;
     }
+
+
 
     @Override
     public final void accept( @Nonnull final Collection<IBenchmarkAgent> p_agents, @Nonnull final Pair<String, IStatistic> p_statistic )
@@ -72,6 +77,7 @@ public final class CPool extends IBaseRuntime
 
         l_timer.stop();
     }
+
 
     /**
      * execution agent wrapper
