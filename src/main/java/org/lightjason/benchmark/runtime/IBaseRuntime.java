@@ -28,6 +28,7 @@ import org.lightjason.benchmark.agent.IBenchmarkAgent;
 import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 import java.text.MessageFormat;
+import java.util.function.Consumer;
 
 
 /**
@@ -44,13 +45,14 @@ public abstract class IBaseRuntime implements IRuntime
      */
     private final int m_value;
 
+
     /**
      * ctor
-     *
-     * @param p_type runtime type
+     *  @param p_type runtime type
      * @param p_value runtime value
      */
-    protected IBaseRuntime( @Nonnull final ERuntime p_type, @Nonnegative final int p_value )
+    protected IBaseRuntime( @Nonnull final ERuntime p_type, @Nonnegative final int p_value
+    )
     {
         m_type = p_type;
         m_value = p_value;
@@ -66,8 +68,9 @@ public abstract class IBaseRuntime implements IRuntime
      * agent execution
      *
      * @param p_agent agent execution
+     * @param p_errorfunction error functino
      */
-    protected static void execute( final IBenchmarkAgent p_agent )
+    protected final void execute( @Nonnull final IBenchmarkAgent p_agent, @Nonnull final Consumer<Exception> p_errorfunction )
     {
         try
         {
@@ -75,7 +78,7 @@ public abstract class IBaseRuntime implements IRuntime
         }
         catch ( final Exception l_exception )
         {
-            throw new RuntimeException( l_exception );
+            p_errorfunction.accept( l_exception );
         }
     }
 }

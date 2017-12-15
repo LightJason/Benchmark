@@ -8,8 +8,6 @@
 !*.java
 !*.properties
 
-!src/main/resources/**/*.yml
-!src/main/resources/**/*.asl
 !src/site/*.xml
 !src/site/*.css
 !src/site/*.doxyfile

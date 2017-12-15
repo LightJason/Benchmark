@@ -32,6 +32,8 @@ import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.LongStream;
 
 
 /**
@@ -43,6 +45,10 @@ public final class CPool extends IBaseRuntime
      * stealing pool
      */
     private final ExecutorService m_pool;
+    /**
+     * error exception
+     */
+    private final AtomicReference<Exception> m_error = new AtomicReference<>();
 
     /**
      * ctor
@@ -76,6 +82,9 @@ public final class CPool extends IBaseRuntime
         }
 
         l_timer.stop();
+
+        if ( m_error.get() != null )
+            throw new RuntimeException( m_error.get() );
     }
 
 
@@ -109,7 +118,13 @@ public final class CPool extends IBaseRuntime
         @Override
         public final void run()
         {
-            execute( m_agent );
+            CPool.this.execute(
+                m_agent,
+                i ->
+                {
+                    m_error.set( i );
+                    LongStream.range( 0, m_countdown.getCount() ).forEach( j -> m_countdown.countDown() );
+                } );
 
             if ( m_agent.active() )
                 m_pool.submit( this );

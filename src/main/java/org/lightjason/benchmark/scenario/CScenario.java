@@ -311,9 +311,11 @@ public final class CScenario implements IScenario
      * run a single iteration
      *
      * @param p_run run number
+     * @warning run an explicit GC call to clean-up memory on previours run to avoid heap overflow
      */
     private void iteration( @Nonnegative int p_run )
     {
+        Runtime.getRuntime().gc();
         m_runtime.accept(
             m_statistic.starttimer(  MessageFormat.format( "{0}-agentinitialize", String.format( m_numberpadding, p_run ) ) ).stop(
                 m_agentdefinition.entrySet()
@@ -329,9 +331,11 @@ public final class CScenario implements IScenario
      * warm-up run
      *
      * @param p_run run number
+     * @warning run an explicit GC call to clean-up memory on previours run to avoid heap overflow
      */
     private void warmup( @Nonnegative int p_run )
     {
+        Runtime.getRuntime().gc();
         m_runtime.accept(
             m_agentdefinition.entrySet()
                              .parallelStream()

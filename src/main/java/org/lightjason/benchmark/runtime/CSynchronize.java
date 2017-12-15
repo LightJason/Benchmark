@@ -30,6 +30,7 @@ import org.lightjason.benchmark.scenario.IStatistic;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicReference;
 
 
 /**
@@ -46,7 +47,10 @@ public final class CSynchronize extends IBaseRuntime
      */
     public CSynchronize( @Nonnull final ERuntime p_type, final int p_value )
     {
-        super( p_type, p_value );
+        super(
+            p_type,
+            p_value
+        );
     }
 
     @Override
@@ -54,10 +58,15 @@ public final class CSynchronize extends IBaseRuntime
     {
         final IStatistic.ITimer l_timer = p_statistic.getValue().starttimer( p_statistic.getLeft() );
 
-        while ( p_agents.parallelStream().noneMatch( IBenchmarkAgent::active ) )
-            p_agents.parallelStream().forEach( CSynchronize::execute );
+        final AtomicReference<Exception> l_exception = new AtomicReference<>();
+
+        while ( ( l_exception.get() == null ) && ( p_agents.parallelStream().noneMatch( IBenchmarkAgent::active ) ) )
+            p_agents.parallelStream().forEach( i -> this.execute( i, l_exception::set ) );
 
         l_timer.stop();
+
+        if ( l_exception.get() != null )
+            throw new RuntimeException( l_exception.get() );
     }
 
 }
