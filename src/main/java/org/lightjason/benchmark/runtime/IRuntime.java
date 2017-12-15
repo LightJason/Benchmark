@@ -25,7 +25,7 @@ package org.lightjason.benchmark.runtime;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.lightjason.benchmark.agent.IBenchmarkAgent;
-import org.lightjason.benchmark.scenario.IStatistic;
+import org.lightjason.benchmark.statistic.IStatistic;
 
 import java.util.Collection;
 import java.util.function.BiConsumer;

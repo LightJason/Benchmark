@@ -21,9 +21,10 @@
  * @endcond
  */
 
-package org.lightjason.benchmark.scenario;
+package org.lightjason.benchmark.statistic;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.apache.commons.math3.stat.descriptive.StatisticalSummary;
 import org.apache.commons.math3.stat.descriptive.SynchronizedDescriptiveStatistics;
 
 import javax.annotation.Nonnull;
@@ -33,28 +34,14 @@ import java.util.concurrent.ConcurrentSkipListMap;
 
 
 /**
- * statistic
+ * descriptive statistic
  */
-public final class CStatistic implements IStatistic
+public final class CDescriptiveStatistic implements IStatistic
 {
     /**
      * statistic map
      */
     private final Map<String, DescriptiveStatistics> m_statistic = new ConcurrentSkipListMap<>( String.CASE_INSENSITIVE_ORDER );
-
-    @Override
-    public final void accept( final String p_name, final Number p_number )
-    {
-        final DescriptiveStatistics l_statistic = m_statistic.getOrDefault( p_name, new SynchronizedDescriptiveStatistics() );
-        m_statistic.putIfAbsent( p_name, l_statistic );
-        l_statistic.addValue( p_number.doubleValue() );
-    }
-
-    @Override
-    public final Map<String, DescriptiveStatistics> get()
-    {
-        return Collections.unmodifiableMap( m_statistic );
-    }
 
     @Override
     public final IStatistic clear( @Nonnull final String p_name )
@@ -69,51 +56,23 @@ public final class CStatistic implements IStatistic
     @Override
     public final ITimer starttimer( final String p_name )
     {
-        return new CTimer( p_name );
+        return new CTimer( p_name, this );
     }
 
-    /**
-     * timer
-     */
-    private final class CTimer implements ITimer
+    @Override
+    public final void accept( final String p_name, final Number p_number )
     {
-        /**
-         * name of the timer
-         */
-        private final String m_name;
-        /**
-         * start timer
-         */
-        private final long m_starttime = System.nanoTime();
-
-        /**
-         * ctor
-         *
-         * @param p_name name of the timer
-         */
-        CTimer( final String p_name )
-        {
-            m_name = p_name;
-        }
-
-        @Override
-        public final String name()
-        {
-            return m_name;
-        }
-
-        @Override
-        public final <T> T stop( final T p_value )
-        {
-            CStatistic.this.accept( m_name, System.nanoTime() - m_starttime );
-            return p_value;
-        }
-
-        @Override
-        public final void stop()
-        {
-            this.stop( null );
-        }
-
+        final DescriptiveStatistics l_statistic = m_statistic.getOrDefault( p_name, new SynchronizedDescriptiveStatistics() );
+        m_statistic.putIfAbsent( p_name, l_statistic );
+        l_statistic.addValue( p_number.doubleValue() );
     }
+
+    @Override
+    public final Map<String, StatisticalSummary> get()
+    {
+        return Collections.unmodifiableMap( m_statistic );
+    }
+
+
+
 }

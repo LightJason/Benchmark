@@ -21,51 +21,55 @@
  * @endcond
  */
 
-package org.lightjason.benchmark;
-
-import org.lightjason.benchmark.scenario.CScenario;
-
-import java.util.logging.LogManager;
-
+package org.lightjason.benchmark.statistic;
 
 /**
- * main application with runtime
+ * timer
  */
-public final class CMain
+public final class CTimer implements ITimer
 {
+    /**
+     * name of the timer
+     */
+    private final String m_name;
+    /**
+     * statistic reference
+     */
+    private final IStatistic m_statistic;
+    /**
+     * start timer
+     */
+    private final long m_starttime = System.nanoTime();
 
-    static
+    /**
+     * ctor
+     *
+     * @param p_name name of the timer
+     * @param p_statistic statistic reference
+     */
+    CTimer( final String p_name, final IStatistic p_statistic )
     {
-        // logger
-        LogManager.getLogManager().reset();
+        m_name = p_name;
+        m_statistic = p_statistic;
     }
 
-
-    /**
-     * private constructor to avoid any instantiation
-     */
-    private CMain()
-    {}
-
-
-    /**
-     * main method
-     *
-     * @param p_args command-line arguments
-     * @throws Exception thrown on any error
-     */
-    public static void main( final String[] p_args ) throws Exception
+    @Override
+    public final String name()
     {
-        if ( p_args.length != 1 )
-            throw new RuntimeException( "argument with scenario configuration must be set" );
+        return m_name;
+    }
 
-        /*
-        https://bl.ocks.org/mbostock/4061502
-        http://bl.ocks.org/mbostock/3943967
-        https://bl.ocks.org/mbostock/1256572
-        http://square.github.io/crossfilter/
-        */
-        CScenario.build( p_args[0] ).run();
+    @Override
+    public final <T> T stop( final T p_value )
+    {
+        m_statistic.accept( m_name, System.nanoTime() - m_starttime );
+        return p_value;
+    }
+
+    @Override
+    public final void stop()
+    {
+        this.stop( null );
     }
 
 }

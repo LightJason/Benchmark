@@ -21,51 +21,54 @@
  * @endcond
  */
 
-package org.lightjason.benchmark;
+package org.lightjason.benchmark.statistic;
 
-import org.lightjason.benchmark.scenario.CScenario;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 
-import java.util.logging.LogManager;
+import java.io.IOException;
 
 
 /**
- * main application with runtime
+ * summary statistic json object writer
  */
-public final class CMain
+public class CSummaryStatisticSerializer extends IBaseStatisticSerializer<SummaryStatistics>
 {
+    /**
+     * class definition
+     */
+    public static final Class<SummaryStatistics> CLASS = SummaryStatistics.class;
+    /**
+     * serial id
+     */
+    private static final long serialVersionUID = -4064447879946082636L;
 
-    static
+    /**
+     * ctor
+     */
+    public CSummaryStatisticSerializer()
     {
-        // logger
-        LogManager.getLogManager().reset();
+        this( null );
     }
 
-
     /**
-     * private constructor to avoid any instantiation
-     */
-    private CMain()
-    {}
-
-
-    /**
-     * main method
+     * ctor
      *
-     * @param p_args command-line arguments
-     * @throws Exception thrown on any error
+     * @param p_class class
      */
-    public static void main( final String[] p_args ) throws Exception
+    public CSummaryStatisticSerializer( final Class<SummaryStatistics> p_class )
     {
-        if ( p_args.length != 1 )
-            throw new RuntimeException( "argument with scenario configuration must be set" );
-
-        /*
-        https://bl.ocks.org/mbostock/4061502
-        http://bl.ocks.org/mbostock/3943967
-        https://bl.ocks.org/mbostock/1256572
-        http://square.github.io/crossfilter/
-        */
-        CScenario.build( p_args[0] ).run();
+        super( p_class );
     }
 
+    @Override
+    public final void serialize( final SummaryStatistics p_statistic, final JsonGenerator p_generator,
+                                 final SerializerProvider p_serializer ) throws IOException
+    {
+
+        p_generator.writeStartObject();
+        this.writejson( p_statistic, p_generator );
+        p_generator.writeEndObject();
+    }
 }

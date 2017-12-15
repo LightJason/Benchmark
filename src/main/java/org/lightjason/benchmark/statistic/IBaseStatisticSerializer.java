@@ -21,51 +21,52 @@
  * @endcond
  */
 
-package org.lightjason.benchmark;
+package org.lightjason.benchmark.statistic;
 
-import org.lightjason.benchmark.scenario.CScenario;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import org.apache.commons.math3.stat.descriptive.StatisticalSummary;
 
-import java.util.logging.LogManager;
+import java.io.IOException;
 
 
 /**
- * main application with runtime
+ * statistic serializer
+ * @tparam T statistic type
  */
-public final class CMain
+public abstract class IBaseStatisticSerializer<T extends StatisticalSummary> extends StdSerializer<T>
 {
-
-    static
-    {
-        // logger
-        LogManager.getLogManager().reset();
-    }
-
-
     /**
-     * private constructor to avoid any instantiation
+     * serial id
      */
-    private CMain()
-    {}
-
+    private static final long serialVersionUID = -2161413671299674027L;
 
     /**
-     * main method
+     * ctor
      *
-     * @param p_args command-line arguments
-     * @throws Exception thrown on any error
+     * @param p_class class type
      */
-    public static void main( final String[] p_args ) throws Exception
+    protected IBaseStatisticSerializer( final Class<T> p_class )
     {
-        if ( p_args.length != 1 )
-            throw new RuntimeException( "argument with scenario configuration must be set" );
-
-        /*
-        https://bl.ocks.org/mbostock/4061502
-        http://bl.ocks.org/mbostock/3943967
-        https://bl.ocks.org/mbostock/1256572
-        http://square.github.io/crossfilter/
-        */
-        CScenario.build( p_args[0] ).run();
+        super( p_class );
     }
 
+    /**
+     * statistic writing
+     *
+     * @param p_statistic statistic
+     * @param p_generator generator
+     * @tparam T statistic object
+     * @throws IOException is thrown on io error
+     */
+    protected final void writejson( final T p_statistic, final JsonGenerator p_generator ) throws IOException
+    {
+        p_generator.writeNumberField( "max", p_statistic.getMax() );
+        p_generator.writeNumberField( "mean", p_statistic.getMean() );
+        p_generator.writeNumberField( "min", p_statistic.getMin() );
+        p_generator.writeNumberField( "count", p_statistic.getN() );
+        p_generator.writeNumberField( "standarddeviation",  p_statistic.getStandardDeviation() );
+        p_generator.writeNumberField( "sum", p_statistic.getSum() );
+        p_generator.writeNumberField( "variance", p_statistic.getVariance() );
+    }
 }

@@ -43,6 +43,10 @@ import org.lightjason.benchmark.neighborhood.ENeighborhood;
 import org.lightjason.benchmark.neighborhood.INeighborhood;
 import org.lightjason.benchmark.runtime.ERuntime;
 import org.lightjason.benchmark.runtime.IRuntime;
+import org.lightjason.benchmark.statistic.CDescriptiveStatisticSerializer;
+import org.lightjason.benchmark.statistic.CSummaryStatisticSerializer;
+import org.lightjason.benchmark.statistic.EStatistic;
+import org.lightjason.benchmark.statistic.IStatistic;
 import org.pmw.tinylog.Logger;
 import org.yaml.snakeyaml.Yaml;
 
@@ -75,7 +79,7 @@ public final class CScenario implements IScenario
     /**
      * statistic
      */
-    private final IStatistic m_statistic = new CStatistic();
+    private final IStatistic m_statistic;
     /**
      * runtime
      */
@@ -120,6 +124,7 @@ public final class CScenario implements IScenario
         final ITree l_configuration = load( p_file );
 
         m_resultfilename = p_file.replace( ".yaml", "" ).replace( ".yml", "" ) + ".json";
+        m_statistic = EStatistic.from( l_configuration.getOrDefault( "summary", "global", "statistic" ) ).build();
         m_runs = l_configuration.<Number>getOrDefault( 1, "global", "runs" ).intValue();
         m_iteration = l_configuration.<Number>getOrDefault( 1, "global", "iterations" ).intValue();
         m_warmup = l_configuration.<Number>getOrDefault( 0, "global", "warmup" ).intValue();
@@ -150,7 +155,7 @@ public final class CScenario implements IScenario
 
 
         // agent generators
-        final String l_root = Paths.get( p_file ).getParent().toString();
+        final String l_root = Paths.get( p_file ).getParent() == null ? "" : Paths.get( p_file ).getParent().toString();
         m_agentdefinition = Collections.unmodifiableMap(
             l_configuration.<Map<String, Object>>getOrDefault( Collections.emptyMap(), "agent", "source" )
                     .entrySet()
@@ -219,7 +224,10 @@ public final class CScenario implements IScenario
         {
             new ObjectMapper()
                 .enable( m_serializationfeature )
-                .registerModules( new SimpleModule().addSerializer( IStatistic.CStatisticSerializer.CLASS, new IStatistic.CStatisticSerializer() ) )
+                .registerModules(
+                    new SimpleModule().addSerializer( CDescriptiveStatisticSerializer.CLASS, new CDescriptiveStatisticSerializer() ),
+                    new SimpleModule().addSerializer( CSummaryStatisticSerializer.CLASS, new CSummaryStatisticSerializer() )
+                )
                 .writeValue( new File( m_resultfilename ), l_result );
         }
         catch ( final IOException l_exception )

@@ -21,51 +21,67 @@
  * @endcond
  */
 
-package org.lightjason.benchmark;
+package org.lightjason.benchmark.statistic;
 
-import org.lightjason.benchmark.scenario.CScenario;
+import org.apache.commons.math3.stat.descriptive.StatisticalSummary;
 
-import java.util.logging.LogManager;
+import javax.annotation.Nonnull;
+import java.util.Collections;
+import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 
 
 /**
- * main application with runtime
+ * statistic interface
  */
-public final class CMain
+public interface IStatistic extends BiConsumer<String, Number>, Supplier<Map<String, StatisticalSummary>>
 {
-
-    static
-    {
-        // logger
-        LogManager.getLogManager().reset();
-    }
-
-
     /**
-     * private constructor to avoid any instantiation
+     * empty statistic
      */
-    private CMain()
-    {}
+    IStatistic EMPTY = new IStatistic()
+    {
+        @Override
+        public final IStatistic clear( @Nonnull final String p_name )
+        {
+            return this;
+        }
+
+        @Override
+        public final ITimer starttimer( final String p_name )
+        {
+            return ITimer.EMPTY;
+        }
+
+        @Override
+        public final void accept( final String p_name, final Number p_number )
+        {
+
+        }
+
+        @Override
+        public final Map<String, StatisticalSummary> get()
+        {
+            return Collections.emptyMap();
+        }
+    };
 
 
     /**
-     * main method
+     * clears a single statistic
      *
-     * @param p_args command-line arguments
-     * @throws Exception thrown on any error
+     * @param p_name name
+     * @return self reference
      */
-    public static void main( final String[] p_args ) throws Exception
-    {
-        if ( p_args.length != 1 )
-            throw new RuntimeException( "argument with scenario configuration must be set" );
+    IStatistic clear( @Nonnull final String p_name );
 
-        /*
-        https://bl.ocks.org/mbostock/4061502
-        http://bl.ocks.org/mbostock/3943967
-        https://bl.ocks.org/mbostock/1256572
-        http://square.github.io/crossfilter/
-        */
-        CScenario.build( p_args[0] ).run();
-    }
+    /**
+     * starts a timer
+     *
+     * @param p_name name of the timer
+     * @return timer
+     */
+    ITimer starttimer( final String p_name );
 
 }

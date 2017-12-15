@@ -21,51 +21,55 @@
  * @endcond
  */
 
-package org.lightjason.benchmark;
+package org.lightjason.benchmark.statistic;
 
-import org.lightjason.benchmark.scenario.CScenario;
+import org.apache.commons.math3.stat.descriptive.StatisticalSummary;
+import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
+import org.apache.commons.math3.stat.descriptive.SynchronizedSummaryStatistics;
 
-import java.util.logging.LogManager;
+import javax.annotation.Nonnull;
+import java.util.Collections;
+import java.util.Map;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 
 /**
- * main application with runtime
+ * summary statistic
  */
-public final class CMain
+public class CSummaryStatistic implements IStatistic
 {
+    /**
+     * statistic map
+     */
+    private final Map<String, SummaryStatistics> m_statistic = new ConcurrentSkipListMap<>( String.CASE_INSENSITIVE_ORDER );
 
-    static
+    @Override
+    public final IStatistic clear( @Nonnull final String p_name )
     {
-        // logger
-        LogManager.getLogManager().reset();
+        final SummaryStatistics l_statistic = m_statistic.get( p_name );
+        if ( l_statistic != null )
+            l_statistic.clear();
+
+        return this;
     }
 
-
-    /**
-     * private constructor to avoid any instantiation
-     */
-    private CMain()
-    {}
-
-
-    /**
-     * main method
-     *
-     * @param p_args command-line arguments
-     * @throws Exception thrown on any error
-     */
-    public static void main( final String[] p_args ) throws Exception
+    @Override
+    public final ITimer starttimer( final String p_name )
     {
-        if ( p_args.length != 1 )
-            throw new RuntimeException( "argument with scenario configuration must be set" );
-
-        /*
-        https://bl.ocks.org/mbostock/4061502
-        http://bl.ocks.org/mbostock/3943967
-        https://bl.ocks.org/mbostock/1256572
-        http://square.github.io/crossfilter/
-        */
-        CScenario.build( p_args[0] ).run();
+        return new CTimer( p_name, this );
     }
 
+    @Override
+    public final void accept( final String p_name, final Number p_number )
+    {
+        final SummaryStatistics l_statistic = m_statistic.getOrDefault( p_name, new SynchronizedSummaryStatistics() );
+        m_statistic.putIfAbsent( p_name, l_statistic );
+        l_statistic.addValue( p_number.doubleValue() );
+    }
+
+    @Override
+    public final Map<String, StatisticalSummary> get()
+    {
+        return Collections.unmodifiableMap( m_statistic );
+    }
 }

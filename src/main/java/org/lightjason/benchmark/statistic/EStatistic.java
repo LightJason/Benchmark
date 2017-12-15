@@ -21,51 +21,49 @@
  * @endcond
  */
 
-package org.lightjason.benchmark;
+package org.lightjason.benchmark.statistic;
 
-import org.lightjason.benchmark.scenario.CScenario;
-
-import java.util.logging.LogManager;
+import javax.annotation.Nonnull;
+import java.text.MessageFormat;
+import java.util.Locale;
 
 
 /**
- * main application with runtime
+ * statistic factory
  */
-public final class CMain
+public enum EStatistic
 {
-
-    static
-    {
-        // logger
-        LogManager.getLogManager().reset();
-    }
-
+    SUMMARY,
+    DESCRIPTIVE;
 
     /**
-     * private constructor to avoid any instantiation
-     */
-    private CMain()
-    {}
-
-
-    /**
-     * main method
+     * build a new statistic reference
      *
-     * @param p_args command-line arguments
-     * @throws Exception thrown on any error
+     * @return statistic
      */
-    public static void main( final String[] p_args ) throws Exception
+    public IStatistic build()
     {
-        if ( p_args.length != 1 )
-            throw new RuntimeException( "argument with scenario configuration must be set" );
+        switch ( this )
+        {
+            case SUMMARY:
+                return new CSummaryStatistic();
 
-        /*
-        https://bl.ocks.org/mbostock/4061502
-        http://bl.ocks.org/mbostock/3943967
-        https://bl.ocks.org/mbostock/1256572
-        http://square.github.io/crossfilter/
-        */
-        CScenario.build( p_args[0] ).run();
+            case DESCRIPTIVE:
+                return new CDescriptiveStatistic();
+
+            default:
+                throw new RuntimeException( MessageFormat.format( "unknown statistic [{0}]", this ) );
+        }
     }
 
+    /**
+     * factory
+     *
+     * @param p_name name
+     * @return statistic
+     */
+    public static EStatistic from( @Nonnull final String p_name )
+    {
+        return EStatistic.valueOf( p_name.toUpperCase( Locale.ROOT ) );
+    }
 }

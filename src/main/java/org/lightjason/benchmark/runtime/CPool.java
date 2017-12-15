@@ -25,7 +25,8 @@ package org.lightjason.benchmark.runtime;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.lightjason.benchmark.agent.IBenchmarkAgent;
-import org.lightjason.benchmark.scenario.IStatistic;
+import org.lightjason.benchmark.statistic.IStatistic;
+import org.lightjason.benchmark.statistic.ITimer;
 
 import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
@@ -67,7 +68,7 @@ public final class CPool extends IBaseRuntime
     @Override
     public final void accept( @Nonnull final Collection<IBenchmarkAgent> p_agents, @Nonnull final Pair<String, IStatistic> p_statistic )
     {
-        final IStatistic.ITimer l_timer = p_statistic.getValue().starttimer( p_statistic.getLeft() );
+        final ITimer l_timer = p_statistic.getValue().starttimer( p_statistic.getLeft() );
 
         final CountDownLatch l_countdown = new CountDownLatch( p_agents.size() );
         p_agents.parallelStream().forEach( i -> new CExecution( l_countdown, i ) );

@@ -21,51 +21,55 @@
  * @endcond
  */
 
-package org.lightjason.benchmark;
-
-import org.lightjason.benchmark.scenario.CScenario;
-
-import java.util.logging.LogManager;
-
+package org.lightjason.benchmark.statistic;
 
 /**
- * main application with runtime
+ * interface of a timer object
  */
-public final class CMain
+public interface ITimer
 {
-
-    static
-    {
-        // logger
-        LogManager.getLogManager().reset();
-    }
-
-
     /**
-     * private constructor to avoid any instantiation
+     * empty time
      */
-    private CMain()
-    {}
+    ITimer EMPTY = new ITimer()
+    {
+        @Override
+        public final String name()
+        {
+            return "";
+        }
 
+        @Override
+        public final <T> T stop( final T p_value )
+        {
+            return p_value;
+        }
+
+        @Override
+        public final void stop()
+        {
+
+        }
+    };
 
     /**
-     * main method
+     * name of the timer
      *
-     * @param p_args command-line arguments
-     * @throws Exception thrown on any error
+     * @return name
      */
-    public static void main( final String[] p_args ) throws Exception
-    {
-        if ( p_args.length != 1 )
-            throw new RuntimeException( "argument with scenario configuration must be set" );
+    String name();
 
-        /*
-        https://bl.ocks.org/mbostock/4061502
-        http://bl.ocks.org/mbostock/3943967
-        https://bl.ocks.org/mbostock/1256572
-        http://square.github.io/crossfilter/
-        */
-        CScenario.build( p_args[0] ).run();
-    }
+    /**
+     * stop timer
+     *
+     * @param p_value any value
+     * @return returns value
+     */
+    <T> T stop( final T p_value );
 
+    /**
+     * stops the timer
+     */
+    void stop();
 }
+
