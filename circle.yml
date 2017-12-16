@@ -23,7 +23,7 @@ jobs:
             - run:
                 name: Execute Scenario
                 command: |
-                    export JAVA_OPTS="$JAVA_OPTS -Djava.util.concurrent.ForkJoinPool.common.parallelism=$((nproc - 1)"
+                    export JAVA_OPTS="$JAVA_OPTS -Djava.util.concurrent.ForkJoinPool.common.parallelism=$((nproc - 1))"
                     echo $JAVA_OPTS
                     benchmark synchronizedcount5.yml
             - store_artifacts:
