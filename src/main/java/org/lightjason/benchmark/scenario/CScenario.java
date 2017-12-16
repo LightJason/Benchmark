@@ -73,6 +73,8 @@ import java.util.stream.Stream;
 
 /**
  * scenario
+ *
+ * @warning run an explicit GC call to clean-up memory on previours run to avoid heap overflow
  */
 public final class CScenario implements IScenario
 {
@@ -166,7 +168,6 @@ public final class CScenario implements IScenario
                             i -> i.getValue() instanceof String ? parse( i.getValue().toString() ) : objecttolistfunction( i.getValue() )
                         ) )
         );
-
     }
 
     /**
@@ -207,6 +208,7 @@ public final class CScenario implements IScenario
 
     private void store()
     {
+        Runtime.getRuntime().gc();
         Logger.info( "store measurement result in [{0}]", m_resultfilename );
 
         final Map<String, Object> l_configuration = new HashMap<>();
@@ -253,7 +255,7 @@ public final class CScenario implements IScenario
                  {
                      Logger.info( "execute iteration step [{0}]", j );
                      IntStream.range( 0, m_iteration ).forEach( i -> this.iteration( j ) );
-                     this.store(  );
+                     this.store();
                  } );
     }
 
@@ -316,10 +318,26 @@ public final class CScenario implements IScenario
     }
 
     /**
+     * warm-up run
+     *
+     * @param p_run run number
+     */
+    private void warmup( @Nonnegative int p_run )
+    {
+        Runtime.getRuntime().gc();
+        m_runtime.accept(
+            m_agentdefinition.entrySet()
+                             .parallelStream()
+                             .flatMap( i -> i.getKey().generatemultiple( i.getValue().apply( p_run % m_runs + 1 ).intValue() ) )
+                             .collect( Collectors.toSet() ),
+            new ImmutablePair<>( MessageFormat.format( "{0}-execution", String.format( m_numberpadding, p_run ) ), IStatistic.EMPTY )
+        );
+    }
+
+    /**
      * run a single iteration
      *
      * @param p_run run number
-     * @warning run an explicit GC call to clean-up memory on previours run to avoid heap overflow
      */
     private void iteration( @Nonnegative int p_run )
     {
@@ -332,24 +350,6 @@ public final class CScenario implements IScenario
                                  .collect( Collectors.toSet() )
             ),
             new ImmutablePair<>( MessageFormat.format( "{0}-execution", String.format( m_numberpadding, p_run ) ), m_statistic )
-        );
-    }
-
-    /**
-     * warm-up run
-     *
-     * @param p_run run number
-     * @warning run an explicit GC call to clean-up memory on previours run to avoid heap overflow
-     */
-    private void warmup( @Nonnegative int p_run )
-    {
-        Runtime.getRuntime().gc();
-        m_runtime.accept(
-            m_agentdefinition.entrySet()
-                             .parallelStream()
-                             .flatMap( i -> i.getKey().generatemultiple( i.getValue().apply( p_run ).intValue() ) )
-                             .collect( Collectors.toSet() ),
-            new ImmutablePair<>( MessageFormat.format( "{0}-execution", String.format( m_numberpadding, p_run ) ), IStatistic.EMPTY )
         );
     }
 

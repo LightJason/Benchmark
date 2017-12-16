@@ -58,7 +58,6 @@ public final class CSynchronize extends IBaseRuntime
     public final void accept( @Nonnull final Collection<IBenchmarkAgent> p_agents, @Nonnull final Pair<String, IStatistic> p_statistic )
     {
         final ITimer l_timer = p_statistic.getValue().starttimer( p_statistic.getLeft() );
-
         final AtomicReference<Exception> l_exception = new AtomicReference<>();
 
         while ( ( l_exception.get() == null ) && ( p_agents.parallelStream().noneMatch( IBenchmarkAgent::active ) ) )

@@ -80,7 +80,7 @@ public final class CPool extends IBaseRuntime
         }
         catch ( final InterruptedException l_exception )
         {
-            Logger.error( l_exception );
+            Logger.trace( l_exception );
             throw new RuntimeException( l_exception );
         }
 

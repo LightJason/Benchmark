@@ -79,7 +79,7 @@ public abstract class IBaseRuntime implements IRuntime
         }
         catch ( final Exception l_exception )
         {
-            Logger.error( l_exception );
+            Logger.trace( l_exception );
             p_errorfunction.accept( l_exception );
         }
     }
