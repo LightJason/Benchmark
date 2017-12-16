@@ -13,7 +13,7 @@ jobs:
 
         environment:
             TZ: "/usr/share/zoneinfo/Europe/Berlin"
-            JAVA_OPTS: "-XX:+AggressiveOpts -XX:+UseConcMarkSweepGC -Xmx3840M"
+            JAVA_OPTS: "-XX:+AggressiveOpts -XX:+UseConcMarkSweepGC -Xmx3686M"
 
         steps:
             - checkout
