@@ -247,17 +247,20 @@ public final class CScenario implements IScenario
     {
         if ( m_warmup > 0 )
             IntStream.rangeClosed( 1, m_warmup )
-                     .forEach( j ->
+                     .forEach( j -> IntStream.range( 0, m_iteration ).forEach( i ->
                      {
-                         Logger.info( "execute warum-up step [{0}]", j );
-                         IntStream.range( 0, m_iteration ).forEach( i -> this.warmup( j ) );
-                     } );
+                         Logger.info( "execute warum-up step [{0}] and iteration [{1}]", j, i );
+                         this.warmup( j );
+                     } ) );
 
         IntStream.rangeClosed( 1, m_runs )
                  .forEach( j ->
                  {
-                     Logger.info( "execute iteration step [{0}]", j );
-                     IntStream.range( 0, m_iteration ).forEach( i -> this.iteration( j ) );
+                     IntStream.range( 0, m_iteration ).forEach( i ->
+                     {
+                         Logger.info( "execute run step [{0}] and iteration [{1}]", j, i );
+                         this.iteration( j );
+                     } );
                      this.store();
                  } );
     }
