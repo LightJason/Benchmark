@@ -247,7 +247,7 @@ public final class CScenario implements IScenario
     {
         if ( m_warmup > 0 )
             IntStream.rangeClosed( 1, m_warmup )
-                     .forEach( j -> IntStream.range( 0, m_iteration ).forEach( i ->
+                     .forEach( j -> IntStream.rangeClosed( 1, m_iteration ).forEach( i ->
                      {
                          Logger.info( "execute warum-up step [{0}] and iteration [{1}]", j, i );
                          this.warmup( j );
@@ -256,7 +256,7 @@ public final class CScenario implements IScenario
         IntStream.rangeClosed( 1, m_runs )
                  .forEach( j ->
                  {
-                     IntStream.range( 0, m_iteration ).forEach( i ->
+                     IntStream.rangeClosed( 1, m_iteration ).forEach( i ->
                      {
                          Logger.info( "execute run step [{0}] and iteration [{1}]", j, i );
                          this.iteration( j );
