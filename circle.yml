@@ -22,10 +22,7 @@ jobs:
                 command: git clean -xdf && git fetch -p && git gc --prune=now
             - run:
                 name: Execute Scenario
-                command: |
-                    export JAVA_OPTS="$JAVA_OPTS -Djava.util.concurrent.ForkJoinPool.common.parallelism=$((nproc - 1))"
-                    echo $JAVA_OPTS
-                    benchmark synchronizedcount5.yml
+                command: benchmark synchronizedcount5.yml
             - store_artifacts:
                 path: synchronizedcount5.json
             - run:
