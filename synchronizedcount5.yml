@@ -1,5 +1,5 @@
 global:
-    runs: 8
+    runs: 16
     warmup: 7
     iterations: 5
     prettyprint: true
