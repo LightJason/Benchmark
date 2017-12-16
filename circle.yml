@@ -13,8 +13,7 @@ jobs:
 
         environment:
             TZ: "/usr/share/zoneinfo/Europe/Berlin"
-            JAVA_OPTS: -XX:+UseConcMarkSweepGC -Xmx3584M 
-            #-Djava.util.concurrent.ForkJoinPool.common.parallelism=
+            JAVA_OPTS: "-XX:+UseConcMarkSweepGC -Xmx3584M"
 
         steps:
             - checkout
@@ -26,7 +25,9 @@ jobs:
                 command: mvn clean dependency:purge-local-repository -Dexclude="org.lightjason:agentspeak" -DreResolve=false -DactTransitively=true
             - run:
                 name: Build
-                command: benchmark synchronizedcount5.yml
+                command: |
+                    export JAVA_OPTS="$JAVA_OPTS -Djava.util.concurrent.ForkJoinPool.common.parallelism=$((nproc - 1)"
+                    benchmark synchronizedcount5.yml
             - store_artifacts:
                 path: synchronizedcount5.json
             - run:
