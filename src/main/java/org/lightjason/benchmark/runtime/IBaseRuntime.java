@@ -24,6 +24,7 @@
 package org.lightjason.benchmark.runtime;
 
 import org.lightjason.benchmark.agent.IBenchmarkAgent;
+import org.pmw.tinylog.Logger;
 
 import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
@@ -78,6 +79,7 @@ public abstract class IBaseRuntime implements IRuntime
         }
         catch ( final Exception l_exception )
         {
+            Logger.error( l_exception );
             p_errorfunction.accept( l_exception );
         }
     }

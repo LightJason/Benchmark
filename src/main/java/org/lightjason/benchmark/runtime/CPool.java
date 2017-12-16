@@ -27,6 +27,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.lightjason.benchmark.agent.IBenchmarkAgent;
 import org.lightjason.benchmark.statistic.IStatistic;
 import org.lightjason.benchmark.statistic.ITimer;
+import org.pmw.tinylog.Logger;
 
 import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
@@ -79,6 +80,7 @@ public final class CPool extends IBaseRuntime
         }
         catch ( final InterruptedException l_exception )
         {
+            Logger.error( l_exception );
             throw new RuntimeException( l_exception );
         }
 
