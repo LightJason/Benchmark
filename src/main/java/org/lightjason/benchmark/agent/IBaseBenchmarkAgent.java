@@ -120,7 +120,7 @@ public abstract class IBaseBenchmarkAgent extends IBaseAgent<IBenchmarkAgent> im
     /**
      * abstract agent generatorclass for all agents
      */
-    protected abstract static class IGenerator extends IBaseAgentGenerator<IBenchmarkAgent>
+    protected abstract static class IBaseGenerator extends IBaseAgentGenerator<IBenchmarkAgent> implements IBenchmarkAgentGenerator
     {
         /**
          * agent list
@@ -135,7 +135,6 @@ public abstract class IBaseBenchmarkAgent extends IBaseAgent<IBenchmarkAgent> im
          */
         private final String m_basename;
 
-
         /**
          * constructor
          *
@@ -146,10 +145,10 @@ public abstract class IBaseBenchmarkAgent extends IBaseAgent<IBenchmarkAgent> im
          * @param p_neighborhood neighborhhod
          * @throws Exception on any error
          */
-        protected IGenerator( @Nonnull final InputStream p_stream, @Nonnull final Set<IAction> p_actions,
-                              @Nonnull final IVariableBuilder p_variablebuilder,
-                              @Nonnull final String p_basename,
-                              @Nonnull final INeighborhood p_neighborhood ) throws Exception
+        protected IBaseGenerator( @Nonnull final InputStream p_stream, @Nonnull final Set<IAction> p_actions,
+                                  @Nonnull final IVariableBuilder p_variablebuilder,
+                                  @Nonnull final String p_basename,
+                                  @Nonnull final INeighborhood p_neighborhood ) throws Exception
         {
             super( p_stream,
                    p_actions,
@@ -177,9 +176,16 @@ public abstract class IBaseBenchmarkAgent extends IBaseAgent<IBenchmarkAgent> im
         }
 
         @Override
+        public final IBenchmarkAgentGenerator reset()
+        {
+            m_counter.set( 0 );
+            return this;
+        }
+
+        @Override
         public final boolean equals( final Object p_object )
         {
-            return ( p_object != null ) && ( p_object instanceof IGenerator ) && ( p_object.hashCode() == this.hashCode() );
+            return ( p_object != null ) && ( p_object instanceof IBaseGenerator ) && ( p_object.hashCode() == this.hashCode() );
         }
 
         /**

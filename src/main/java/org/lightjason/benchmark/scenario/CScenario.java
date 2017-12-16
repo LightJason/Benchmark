@@ -30,14 +30,13 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.lightjason.agentspeak.action.IAction;
 import org.lightjason.agentspeak.common.CCommon;
-import org.lightjason.agentspeak.generator.IAgentGenerator;
 import org.lightjason.agentspeak.language.execution.IVariableBuilder;
 import org.lightjason.agentspeak.language.variable.CConstant;
 import org.lightjason.benchmark.actions.CBroadcastAction;
 import org.lightjason.benchmark.actions.CSendAction;
 import org.lightjason.benchmark.agent.CBenchmarkAgent;
 import org.lightjason.benchmark.agent.IBaseBenchmarkAgent;
-import org.lightjason.benchmark.agent.IBenchmarkAgent;
+import org.lightjason.benchmark.agent.IBenchmarkAgentGenerator;
 import org.lightjason.benchmark.grammar.CFormularParser;
 import org.lightjason.benchmark.neighborhood.ENeighborhood;
 import org.lightjason.benchmark.neighborhood.INeighborhood;
@@ -113,7 +112,11 @@ public final class CScenario implements IScenario
     /**
      * map with asl pathes and generatoring functions
      */
-    private final Map<IAgentGenerator<IBenchmarkAgent>, Function<Number, Number>> m_agentdefinition;
+    private final Map<IBenchmarkAgentGenerator, Function<Number, Number>> m_agentdefinition;
+    /**
+     * neigborhood structure
+     */
+    private final INeighborhood m_neighborhood;
 
 
     /**
@@ -137,11 +140,11 @@ public final class CScenario implements IScenario
 
         m_runtime = ERuntime.from( l_configuration.getOrDefault( "", "runtime", "type" ) )
                             .apply( l_configuration.<Number>getOrDefault( 1, "runtime", "value" ) );
-        final INeighborhood l_neighborhood = ENeighborhood.from( l_configuration.getOrDefault( "", "runtime", "neighborhood" ) ).build();
+        m_neighborhood = ENeighborhood.from( l_configuration.getOrDefault( "", "runtime", "neighborhood" ) ).build();
 
 
         // action instantiation
-        final Set<IAction> l_action = this.action( l_neighborhood );
+        final Set<IAction> l_action = this.action( m_neighborhood );
 
 
         // create variable builder
@@ -164,7 +167,7 @@ public final class CScenario implements IScenario
                     .parallelStream()
                     .collect(
                         Collectors.toMap(
-                            i -> this.generator( Paths.get( l_root, i.getKey() ).toString(), l_action, l_variablebuilder, l_neighborhood ),
+                            i -> this.generator( Paths.get( l_root, i.getKey() ).toString(), l_action, l_variablebuilder, m_neighborhood ),
                             i -> i.getValue() instanceof String ? parse( i.getValue().toString() ) : objecttolistfunction( i.getValue() )
                         ) )
         );
@@ -293,8 +296,8 @@ public final class CScenario implements IScenario
      * @param p_neighborhood neighborhood
      * @return generator
      */
-    private IAgentGenerator<IBenchmarkAgent> generator( @Nonnull final String p_asl, @Nonnull final Set<IAction> p_action,
-                                                        @Nonnull final IVariableBuilder p_variablebuilder, @Nonnull final INeighborhood p_neighborhood )
+    private IBenchmarkAgentGenerator generator( @Nonnull final String p_asl, @Nonnull final Set<IAction> p_action,
+                                                @Nonnull final IVariableBuilder p_variablebuilder, @Nonnull final INeighborhood p_neighborhood )
     {
         Logger.info( "reading asl file [{0}]", p_asl );
         try
@@ -324,12 +327,16 @@ public final class CScenario implements IScenario
      */
     private void warmup( @Nonnegative int p_run )
     {
+        m_neighborhood.clear();
+
         Runtime.getRuntime().gc();
         m_runtime.accept(
-            m_agentdefinition.entrySet()
-                             .parallelStream()
-                             .flatMap( i -> i.getKey().generatemultiple( i.getValue().apply( p_run % m_runs + 1 ).intValue() ) )
-                             .collect( Collectors.toSet() ),
+            m_neighborhood.buildneighbor(
+                m_agentdefinition.entrySet()
+                                 .parallelStream()
+                                 .flatMap( i -> i.getKey().reset().generatemultiple( i.getValue().apply( p_run % m_runs + 1 ).intValue() ) )
+                                 .collect( Collectors.toSet() )
+            ),
             new ImmutablePair<>( MessageFormat.format( "{0}-execution", String.format( m_numberpadding, p_run ) ), IStatistic.EMPTY )
         );
     }
@@ -341,13 +348,17 @@ public final class CScenario implements IScenario
      */
     private void iteration( @Nonnegative int p_run )
     {
+        m_neighborhood.clear();
+
         Runtime.getRuntime().gc();
         m_runtime.accept(
             m_statistic.starttimer(  MessageFormat.format( "{0}-agentinitialize", String.format( m_numberpadding, p_run ) ) ).stop(
-                m_agentdefinition.entrySet()
-                                 .parallelStream()
-                                 .flatMap( i -> i.getKey().generatemultiple( i.getValue().apply( p_run ).intValue() ) )
-                                 .collect( Collectors.toSet() )
+                m_neighborhood.buildneighbor(
+                    m_agentdefinition.entrySet()
+                                     .parallelStream()
+                                     .flatMap( i -> i.getKey().reset().generatemultiple( i.getValue().apply( p_run ).intValue() ) )
+                                     .collect( Collectors.toSet() )
+                )
             ),
             new ImmutablePair<>( MessageFormat.format( "{0}-execution", String.format( m_numberpadding, p_run ) ), m_statistic )
         );

@@ -55,10 +55,8 @@ public class CLeftRightNeighbor implements INeighborhood
 
     @Nonnull
     @Override
-    public final INeighborhood buildneighbor()
+    public final <T> T buildneighbor( final T p_value )
     {
-        m_neighbor.clear();
-
         final List<String> l_neighbor = new ArrayList<>( m_agents.keySet() );
         Collections.shuffle( l_neighbor );
 
@@ -72,6 +70,14 @@ public class CLeftRightNeighbor implements INeighborhood
                      )
                  ) );
 
+        return p_value;
+    }
+
+    @Override
+    public final INeighborhood clear()
+    {
+        m_agents.clear();
+        m_neighbor.clear();
         return this;
     }
 

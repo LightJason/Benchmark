@@ -67,7 +67,7 @@ public final class CBenchmarkAgent extends IBaseBenchmarkAgent
     /**
      * generator of a specified type of agents
      */
-    public static final class CGenerator extends IGenerator
+    public static final class CGenerator extends IBaseGenerator
     {
 
         /**

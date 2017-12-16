@@ -21,52 +21,21 @@
  * @endcond
  */
 
-package org.lightjason.benchmark.neighborhood;
+package org.lightjason.benchmark.agent;
 
-import org.lightjason.benchmark.agent.IBenchmarkAgent;
-
-import javax.annotation.Nonnull;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.stream.Stream;
+import org.lightjason.agentspeak.generator.IAgentGenerator;
 
 
 /**
- * agent storage
+ * interface of a benchmark agent generator
  */
-public interface INeighborhood extends Function<String, IBenchmarkAgent>, Consumer<IBenchmarkAgent>
+public interface IBenchmarkAgentGenerator extends IAgentGenerator<IBenchmarkAgent>
 {
     /**
-     * build the neighbor structure
-     *
-     * @param p_value any input value
-     * @return input object
-     */
-    @Nonnull
-    <T> T buildneighbor( final T p_value );
-
-    /**
-     * clears the data
+     * resets the generator
      *
      * @return self reference
      */
-    INeighborhood clear();
-
-    /**
-     * returns the neighbours
-     *
-     * @param p_neighbor neighbor
-     * @param p_agent agent id
-     * @return stream of neighbours
-     */
-    @Nonnull
-    Stream<String> neighbor( @Nonnull String p_neighbor, @Nonnull final String p_agent );
-
-    /**
-     * returns agent stream
-     *
-     * @return stream
-     */
-    Stream<IBenchmarkAgent> stream();
+    IBenchmarkAgentGenerator reset();
 
 }
