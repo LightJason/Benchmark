@@ -13,6 +13,8 @@ jobs:
 
         environment:
             TZ: "/usr/share/zoneinfo/Europe/Berlin"
+            JAVA_OPTS: -XX:+UseConcMarkSweepGC -Xmx3584M 
+            #-Djava.util.concurrent.ForkJoinPool.common.parallelism=
 
         steps:
             - checkout
