@@ -2,7 +2,7 @@ version: 2
 
 jobs:
     build:
-        working_directory: ~/example
+        working_directory: ~/benchmark
         docker:
             - image: lightjason/benchmark:latest
 
@@ -21,10 +21,7 @@ jobs:
                 name: Git Clean
                 command: git clean -xdf && git fetch -p && git gc --prune=now
             - run:
-                name: Maven Clean
-                command: mvn clean dependency:purge-local-repository -Dexclude="org.lightjason:agentspeak" -DreResolve=false -DactTransitively=true
-            - run:
-                name: Build
+                name: Execute Scenario
                 command: |
                     export JAVA_OPTS="$JAVA_OPTS -Djava.util.concurrent.ForkJoinPool.common.parallelism=$((nproc - 1)"
                     benchmark synchronizedcount5.yml
