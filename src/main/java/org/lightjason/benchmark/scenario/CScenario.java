@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.math3.stat.descriptive.StatisticalSummary;
 import org.lightjason.agentspeak.action.IAction;
 import org.lightjason.agentspeak.common.CCommon;
 import org.lightjason.agentspeak.language.execution.IVariableBuilder;
@@ -214,6 +215,10 @@ public final class CScenario implements IScenario
         Runtime.getRuntime().gc();
         Logger.info( "store measurement result in [{0}]", m_resultfilename );
 
+        // get measurement data
+        final Map<String, StatisticalSummary> l_statistic = m_statistic.get();
+
+        // create configuration structure
         final Map<String, Object> l_configuration = new HashMap<>();
         l_configuration.put( "runs", m_runs );
         l_configuration.put( "iteration", m_iteration );
@@ -221,8 +226,32 @@ public final class CScenario implements IScenario
         l_configuration.put( "runtime", m_runtime.toString() );
         l_configuration.put( "processors", Runtime.getRuntime().availableProcessors() );
 
+        // create time execution
+        final Map<String, Object> l_time = new HashMap<>();
+
+        l_time.put( "agentinitialize",
+                    IntStream.rangeClosed( 1, m_runs )
+                             .mapToObj( i -> l_statistic.get( MessageFormat.format( "{0}-agentinitialize", String.format( m_numberpadding, i ) ) ) )
+                             .collect( Collectors.toList() )
+        );
+
+        l_time.put( "execution",
+                    IntStream.rangeClosed( 1, m_runs )
+                             .mapToObj( i -> l_statistic.get( MessageFormat.format( "{0}-execution", String.format( m_numberpadding, i ) ) ) )
+                             .collect( Collectors.toList() )
+        );
+
+        l_time.put( "cycle",
+            l_statistic.entrySet()
+                       .stream()
+                       .filter( i -> i.getKey().startsWith( "cycle-" ) )
+                       .collect( Collectors.toMap( i -> i.getKey().replace( "cycle-", "" ), Map.Entry::getValue ) )
+        );
+
+
+        // create main object structure
         final Map<String, Object> l_result = new HashMap<>();
-        l_result.put( "time", m_statistic.get() );
+        l_result.put( "time", l_time );
         l_result.put( "configuration", l_configuration );
 
         try
@@ -337,7 +366,7 @@ public final class CScenario implements IScenario
             m_neighborhood.buildneighbor(
                 m_agentdefinition.entrySet()
                                  .parallelStream()
-                                 .flatMap( i -> i.getKey().reset().generatemultiple( i.getValue().apply( p_run % m_runs + 1 ).intValue() ) )
+                                 .flatMap( i -> i.getKey().reset().generatemultiple( i.getValue().apply( p_run % m_runs + 1 ).intValue(), IStatistic.EMPTY ) )
                                  .collect( Collectors.toSet() )
             ),
             new ImmutablePair<>( MessageFormat.format( "{0}-execution", String.format( m_numberpadding, p_run ) ), IStatistic.EMPTY )
@@ -355,11 +384,11 @@ public final class CScenario implements IScenario
 
         Runtime.getRuntime().gc();
         m_runtime.accept(
-            m_statistic.starttimer(  MessageFormat.format( "{0}-agentinitialize", String.format( m_numberpadding, p_run ) ) ).stop(
+            m_statistic.starttimer( MessageFormat.format( "{0}-agentinitialize", String.format( m_numberpadding, p_run ) ) ).stop(
                 m_neighborhood.buildneighbor(
                     m_agentdefinition.entrySet()
                                      .parallelStream()
-                                     .flatMap( i -> i.getKey().reset().generatemultiple( i.getValue().apply( p_run ).intValue() ) )
+                                     .flatMap( i -> i.getKey().reset().generatemultiple( i.getValue().apply( p_run ).intValue(), m_statistic ) )
                                      .collect( Collectors.toSet() )
                 )
             ),

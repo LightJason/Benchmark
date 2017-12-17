@@ -37,7 +37,7 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * synchronized step-based execution
  */
-public final class CSynchronize extends IBaseRuntime
+public final class CSynchronized extends IBaseRuntime
 {
 
     /**
@@ -46,7 +46,7 @@ public final class CSynchronize extends IBaseRuntime
      * @param p_type runtime type
      * @param p_value runtime value
      */
-    public CSynchronize( @Nonnull final ERuntime p_type, final int p_value )
+    public CSynchronized( @Nonnull final ERuntime p_type, final int p_value )
     {
         super(
             p_type,
@@ -60,8 +60,14 @@ public final class CSynchronize extends IBaseRuntime
         final ITimer l_timer = p_statistic.getValue().starttimer( p_statistic.getLeft() );
         final AtomicReference<Exception> l_exception = new AtomicReference<>();
 
-        while ( ( l_exception.get() == null ) && ( p_agents.parallelStream().noneMatch( IBenchmarkAgent::active ) ) )
+        // set bracking with the if confition, because within the while loop the terminate will be
+        // optimized by the compilere, so it will not be executed anymore (voilatile)
+        while ( l_exception.get() == null )
+        {
             p_agents.parallelStream().forEach( i -> this.execute( i, l_exception::set ) );
+            if ( p_agents.parallelStream().allMatch( IBenchmarkAgent::terminate ) )
+                break;
+        }
 
         l_timer.stop();
 

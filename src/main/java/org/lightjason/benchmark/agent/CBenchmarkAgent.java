@@ -28,12 +28,15 @@ import org.lightjason.agentspeak.agent.IAgent;
 import org.lightjason.agentspeak.configuration.IAgentConfiguration;
 import org.lightjason.agentspeak.language.execution.IVariableBuilder;
 import org.lightjason.agentspeak.language.instantiable.IInstantiable;
+import org.lightjason.agentspeak.language.variable.CConstant;
 import org.lightjason.agentspeak.language.variable.IVariable;
 import org.lightjason.benchmark.neighborhood.INeighborhood;
+import org.lightjason.benchmark.statistic.IStatistic;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.InputStream;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -47,7 +50,7 @@ public final class CBenchmarkAgent extends IBaseBenchmarkAgent
     /**
      * serial id
      */
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = -2381202699262497168L;
 
 
     /**
@@ -57,12 +60,12 @@ public final class CBenchmarkAgent extends IBaseBenchmarkAgent
      * @param p_name name of the agent
      */
     private CBenchmarkAgent( @Nonnull final IAgentConfiguration<IBenchmarkAgent> p_configuration,
-                             @Nonnull final String p_name, @Nonnull final INeighborhood p_neighborhood )
+                             @Nonnull final String p_name, @Nonnull final INeighborhood p_neighborhood,
+                             @Nonnull final String p_basename,
+                             @Nonnull final IStatistic p_statistic )
     {
-        super( p_configuration, p_name, p_neighborhood );
+        super( p_configuration, p_name, p_neighborhood, p_basename, p_statistic );
     }
-
-
 
     /**
      * generator of a specified type of agents
@@ -94,13 +97,16 @@ public final class CBenchmarkAgent extends IBaseBenchmarkAgent
 
         @Nullable
         @Override
+        @SuppressWarnings( "unchecked" )
         public final IBenchmarkAgent generatesingle( @Nullable final Object... p_data )
         {
             return this.initializeagent(
                     new CBenchmarkAgent(
                             m_configuration,
                             this.name(),
-                            m_neighborhood
+                            m_neighborhood,
+                            m_basename,
+                            (IStatistic) Objects.requireNonNull( p_data )[0]
                     )
             );
         }
@@ -130,7 +136,12 @@ public final class CBenchmarkAgent extends IBaseBenchmarkAgent
         @Override
         public final Stream<IVariable<?>> apply( final IAgent<?> p_agent, final IInstantiable p_instantiate )
         {
-            return m_variables.stream();
+            return Stream.concat(
+                Stream.of(
+                    new CConstant<>( "MyName", p_agent.<IBenchmarkAgent>raw().id() )
+                ),
+                m_variables.stream()
+            );
         }
     }
 }

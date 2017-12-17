@@ -129,10 +129,10 @@ public final class CPool extends IBaseRuntime
                     LongStream.range( 0, m_countdown.getCount() ).forEach( j -> m_countdown.countDown() );
                 } );
 
-            if ( m_agent.active() )
-                m_pool.submit( this );
-            else
+            if ( m_agent.terminate() )
                 m_countdown.countDown();
+            else
+                m_pool.submit( this );
         }
     }
 

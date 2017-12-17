@@ -35,11 +35,11 @@ public interface IBenchmarkAgent extends IAgent<IBenchmarkAgent>
 {
 
     /**
-     * check if the agent ist active
+     * check if the agent is terminated
      *
-     * @return active flag
+     * @return terminate flag
      */
-    boolean active();
+    boolean terminate();
 
     /**
      * returns unique agent identifier

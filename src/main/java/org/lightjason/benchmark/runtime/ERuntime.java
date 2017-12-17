@@ -50,7 +50,7 @@ public enum ERuntime implements Function<Number, IRuntime>
         switch ( this )
         {
             case SYNCHRONIZED:
-                return new CSynchronize( this, p_number.intValue() );
+                return new CSynchronized( this, p_number.intValue() );
 
             case WORKSTEALING:
                 return new CPool( this, p_number.intValue(), Executors.newWorkStealingPool() );

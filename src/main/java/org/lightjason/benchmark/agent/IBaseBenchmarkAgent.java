@@ -31,11 +31,11 @@ import org.lightjason.agentspeak.configuration.IAgentConfiguration;
 import org.lightjason.agentspeak.generator.IBaseAgentGenerator;
 import org.lightjason.agentspeak.language.execution.IVariableBuilder;
 import org.lightjason.benchmark.neighborhood.INeighborhood;
+import org.lightjason.benchmark.statistic.IStatistic;
 
 import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 import java.io.InputStream;
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -61,6 +61,14 @@ public abstract class IBaseBenchmarkAgent extends IBaseAgent<IBenchmarkAgent> im
      * agent p_neighborhood
      */
     private final INeighborhood m_neighborhood;
+    /**
+     * statistic element
+     */
+    private final IStatistic m_statistic;
+    /**
+     * base name for statistic
+     */
+    private final String m_basename;
 
     /**
      * ctor
@@ -69,11 +77,14 @@ public abstract class IBaseBenchmarkAgent extends IBaseAgent<IBenchmarkAgent> im
      * @param p_id id of the agent
      */
     protected IBaseBenchmarkAgent( @Nonnull final IAgentConfiguration<IBenchmarkAgent> p_configuration, @Nonnull final String p_id,
-                                   @Nonnull final INeighborhood p_neighborhood
+                                   @Nonnull final INeighborhood p_neighborhood, @Nonnull final String p_basename,
+                                   @Nonnull final IStatistic p_statistic
     )
     {
         super( p_configuration );
         m_identifier = p_id;
+        m_basename = p_basename;
+        m_statistic = p_statistic;
         m_neighborhood = p_neighborhood;
     }
 
@@ -83,6 +94,12 @@ public abstract class IBaseBenchmarkAgent extends IBaseAgent<IBenchmarkAgent> im
     public final String id()
     {
         return m_identifier;
+    }
+
+    @Override
+    public final IBenchmarkAgent call() throws Exception
+    {
+        return m_statistic.starttimer( "cycle-" + m_basename ).stop( super.call() );
     }
 
     @Override
@@ -98,9 +115,9 @@ public abstract class IBaseBenchmarkAgent extends IBaseAgent<IBenchmarkAgent> im
     }
 
     @Override
-    public final boolean active()
+    public final boolean terminate()
     {
-        return ( this.sleeping() ) || ( !this.runningplans().isEmpty() );
+        return ( !this.sleeping() ) && ( this.runningplans().isEmpty() );
     }
 
     /**
@@ -127,13 +144,13 @@ public abstract class IBaseBenchmarkAgent extends IBaseAgent<IBenchmarkAgent> im
          */
         protected final INeighborhood m_neighborhood;
         /**
+         * name of tha agents
+         */
+        protected final String m_basename;
+        /**
          * agent number counter
          */
         private final AtomicInteger m_counter = new AtomicInteger();
-        /**
-         * name of tha agents
-         */
-        private final String m_basename;
 
         /**
          * constructor
@@ -166,7 +183,7 @@ public abstract class IBaseBenchmarkAgent extends IBaseAgent<IBenchmarkAgent> im
          */
         protected String name()
         {
-            return MessageFormat.format( "{0}-{1}", m_basename, m_counter.getAndIncrement() );
+            return m_basename + "-" + m_counter.getAndIncrement();
         }
 
         @Override
