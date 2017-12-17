@@ -241,12 +241,21 @@ public final class CScenario implements IScenario
                              .collect( Collectors.toList() )
         );
 
-        l_time.put( "cycle",
-            l_statistic.entrySet()
-                       .stream()
-                       .filter( i -> i.getKey().startsWith( "cycle-" ) )
-                       .collect( Collectors.toMap( i -> i.getKey().replace( "cycle-", "" ), Map.Entry::getValue ) )
-        );
+
+        final Map<Integer, Map<String, Object>> l_cycle = new HashMap<>();
+        l_statistic.entrySet()
+                   .stream()
+                   .filter( i -> i.getKey().startsWith( "cycle-" ) )
+                   .forEach( i ->
+                   {
+                       final String[] l_key = i.getKey().split( "-" );
+
+                       final Map<String, Object> l_map = l_cycle.getOrDefault( Integer.parseInt( l_key[1] ), new HashMap<>() );
+                       l_cycle.putIfAbsent( Integer.parseInt( l_key[1] ), l_map );
+
+                       l_map.put( l_key[2], i.getValue() );
+                   } );
+        l_time.put( "cycle", l_cycle.entrySet().stream().map( Map.Entry::getValue ).collect( Collectors.toList() ) );
 
 
         // create main object structure
@@ -366,10 +375,14 @@ public final class CScenario implements IScenario
             m_neighborhood.buildneighbor(
                 m_agentdefinition.entrySet()
                                  .parallelStream()
-                                 .flatMap( i -> i.getKey().reset().generatemultiple( i.getValue().apply( p_run % m_runs + 1 ).intValue(), IStatistic.EMPTY ) )
+                                 .flatMap( i -> i.getKey().reset().generatemultiple(
+                                     i.getValue().apply( p_run % m_runs + 1 ).intValue(),
+                                     IStatistic.EMPTY,
+                                     String.format( m_numberpadding, p_run )
+                                 ) )
                                  .collect( Collectors.toSet() )
             ),
-            new ImmutablePair<>( MessageFormat.format( "{0}-execution", String.format( m_numberpadding, p_run ) ), IStatistic.EMPTY )
+            new ImmutablePair<>( String.format( m_numberpadding, p_run ) + "-execution", IStatistic.EMPTY )
         );
     }
 
@@ -388,11 +401,15 @@ public final class CScenario implements IScenario
                 m_neighborhood.buildneighbor(
                     m_agentdefinition.entrySet()
                                      .parallelStream()
-                                     .flatMap( i -> i.getKey().reset().generatemultiple( i.getValue().apply( p_run ).intValue(), m_statistic ) )
+                                     .flatMap( i -> i.getKey().reset().generatemultiple(
+                                         i.getValue().apply( p_run ).intValue(),
+                                         m_statistic,
+                                         String.format( m_numberpadding, p_run )
+                                     ) )
                                      .collect( Collectors.toSet() )
                 )
             ),
-            new ImmutablePair<>( MessageFormat.format( "{0}-execution", String.format( m_numberpadding, p_run ) ), m_statistic )
+            new ImmutablePair<>( String.format( m_numberpadding, p_run ) + "-execution", m_statistic )
         );
     }
 

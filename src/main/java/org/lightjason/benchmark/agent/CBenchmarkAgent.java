@@ -105,7 +105,7 @@ public final class CBenchmarkAgent extends IBaseBenchmarkAgent
                             m_configuration,
                             this.name(),
                             m_neighborhood,
-                            m_basename,
+                             Objects.requireNonNull( p_data )[1].toString() + "-" + m_basename,
                             (IStatistic) Objects.requireNonNull( p_data )[0]
                     )
             );
