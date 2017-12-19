@@ -147,18 +147,18 @@ public final class CScenario implements IScenario
         // --- start initialization ----------------------------------------------------------------------------------------------------------------------------
         Runtime.getRuntime().gc();
         this.memory(
-            String.format( m_numberpadding, 0 ) + "-usedmemory",
-            String.format( m_numberpadding, 0 ) + "-totalmemory",
-            String.format( m_numberpadding, 0 ) + "-freememory"
+            String.format( m_numberpadding, -3 ) + "-usedmemory",
+            String.format( m_numberpadding, -3 ) + "-totalmemory",
+            String.format( m_numberpadding, -3 ) + "-freememory"
         );
 
         // action instantiation
         final Set<IAction> l_action = this.action( m_neighborhood );
 
         this.memory(
-            String.format( m_numberpadding, 0 ) + "-usedmemory",
-            String.format( m_numberpadding, 0 ) + "-totalmemory",
-            String.format( m_numberpadding, 0 ) + "-freememory"
+            String.format( m_numberpadding, -2 ) + "-usedmemory",
+            String.format( m_numberpadding, -2 ) + "-totalmemory",
+            String.format( m_numberpadding, -2 ) + "-freememory"
         );
 
 
@@ -174,9 +174,9 @@ public final class CScenario implements IScenario
         );
 
         this.memory(
-            String.format( m_numberpadding, 0 ) + "-usedmemory",
-            String.format( m_numberpadding, 0 ) + "-totalmemory",
-            String.format( m_numberpadding, 0 ) + "-freememory"
+            String.format( m_numberpadding, -1 ) + "-usedmemory",
+            String.format( m_numberpadding, -1 ) + "-totalmemory",
+            String.format( m_numberpadding, -1 ) + "-freememory"
         );
 
 
@@ -299,7 +299,7 @@ public final class CScenario implements IScenario
             "usedmemory",
             "totalmemory"
         ).forEach( i -> l_memoryexecution.put( i,
-                          IntStream.rangeClosed( 0, m_runs )
+                          IntStream.rangeClosed( -3, m_runs )
                                    .mapToObj( j -> l_statistic.get( MessageFormat.format( "{0}-{1}", String.format( m_numberpadding, j ), i ) ) )
                                    .collect( Collectors.toList() )
         ) );
@@ -326,6 +326,8 @@ public final class CScenario implements IScenario
             Logger.error( "error on storing [{0}]", l_exception.getMessage() );
             throw new UncheckedIOException( l_exception );
         }
+
+        Runtime.getRuntime().gc();
     }
 
     @Override
