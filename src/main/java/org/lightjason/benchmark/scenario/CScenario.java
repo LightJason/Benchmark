@@ -52,6 +52,7 @@ import org.yaml.snakeyaml.Yaml;
 
 import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -394,21 +395,7 @@ public final class CScenario implements IScenario
     {
         m_neighborhood.clear();
         Runtime.getRuntime().gc();
-
-        m_statistic.accept(
-            MessageFormat.format( "{0}-usedmemory", String.format( m_numberpadding, p_run ) ),
-            Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()
-        );
-
-        m_statistic.accept(
-            MessageFormat.format( "{0}-totalmemory", String.format( m_numberpadding, p_run ) ),
-            Runtime.getRuntime().totalMemory()
-        );
-
-        m_statistic.accept(
-            MessageFormat.format( "{0}-freememory", String.format( m_numberpadding, p_run ) ),
-            Runtime.getRuntime().freeMemory()
-        );
+        this.iterationmemory( p_run, "start" );
 
         m_runtime.accept(
             m_statistic.starttimer( MessageFormat.format( "{0}-agentinitialize", String.format( m_numberpadding, p_run ) ) ).stop(
@@ -424,6 +411,33 @@ public final class CScenario implements IScenario
                 )
             ),
             new ImmutablePair<>( String.format( m_numberpadding, p_run ) + "-execution", m_statistic )
+        );
+
+        this.iterationmemory( p_run, "stop" );
+    }
+
+
+    /**
+     * set the memory statistic
+     *
+     * @param p_message log message
+     * @param p_object parameter
+     */
+    private void iterationmemory( @Nonnull final String p_message, @Nullable final Object... p_object )
+    {
+        m_statistic.accept(
+            MessageFormat.format( "{0}-usedmemory-{1}", String.format( m_numberpadding, p_run ), p_suffix ),
+            Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()
+        );
+
+        m_statistic.accept(
+            MessageFormat.format( "{0}-totalmemory-{1}", String.format( m_numberpadding, p_run ), p_suffix ),
+            Runtime.getRuntime().totalMemory()
+        );
+
+        m_statistic.accept(
+            MessageFormat.format( "{0}-freememory-{1}", String.format( m_numberpadding, p_run ), p_suffix ),
+            Runtime.getRuntime().freeMemory()
         );
     }
 
