@@ -144,8 +144,22 @@ public final class CScenario implements IScenario
         m_neighborhood = ENeighborhood.from( l_configuration.getOrDefault( "", "runtime", "neighborhood" ) ).build();
 
 
+        // --- start initialization ----------------------------------------------------------------------------------------------------------------------------
+        Runtime.getRuntime().gc();
+        this.memory(
+            String.format( m_numberpadding, 0 ) + "-usedmemory",
+            String.format( m_numberpadding, 0 ) + "-totalmemory",
+            String.format( m_numberpadding, 0 ) + "-freememory"
+        );
+
         // action instantiation
         final Set<IAction> l_action = this.action( m_neighborhood );
+
+        this.memory(
+            String.format( m_numberpadding, 0 ) + "-usedmemory",
+            String.format( m_numberpadding, 0 ) + "-totalmemory",
+            String.format( m_numberpadding, 0 ) + "-freememory"
+        );
 
 
         // create variable builder
@@ -157,6 +171,12 @@ public final class CScenario implements IScenario
                                .map( i -> new CConstant<>( i.getKey(), i.getValue() ) )
                                .collect( Collectors.toSet() )
             )
+        );
+
+        this.memory(
+            String.format( m_numberpadding, 0 ) + "-usedmemory",
+            String.format( m_numberpadding, 0 ) + "-totalmemory",
+            String.format( m_numberpadding, 0 ) + "-freememory"
         );
 
 
@@ -171,6 +191,12 @@ public final class CScenario implements IScenario
                             i -> this.generator( Paths.get( l_root, i.getKey() ).toString(), l_action, l_variablebuilder, m_neighborhood ),
                             i -> i.getValue() instanceof String ? parse( i.getValue().toString() ) : objecttolistfunction( i.getValue() )
                         ) )
+        );
+
+        this.memory(
+            String.format( m_numberpadding, 0 ) + "-usedmemory",
+            String.format( m_numberpadding, 0 ) + "-totalmemory",
+            String.format( m_numberpadding, 0 ) + "-freememory"
         );
     }
 
@@ -218,6 +244,7 @@ public final class CScenario implements IScenario
         // get measurement data
         final Map<String, StatisticalSummary> l_statistic = m_statistic.get();
 
+
         // create configuration structure
         final Map<String, Object> l_configuration = new HashMap<>();
         l_configuration.put( "runs", m_runs );
@@ -225,6 +252,8 @@ public final class CScenario implements IScenario
         l_configuration.put( "warmup", m_warmup );
         l_configuration.put( "runtime", m_runtime.toString() );
         l_configuration.put( "processors", Runtime.getRuntime().availableProcessors() );
+
+
 
         // create time execution
         final Map<String, Object> l_time = new HashMap<>();
@@ -241,7 +270,6 @@ public final class CScenario implements IScenario
                              .collect( Collectors.toList() )
         );
 
-
         final Map<Integer, Map<String, Object>> l_cycle = new HashMap<>();
         l_statistic.entrySet()
                    .stream()
@@ -257,10 +285,31 @@ public final class CScenario implements IScenario
                    } );
         l_time.put( "cycle", l_cycle.entrySet().stream().map( Map.Entry::getValue ).collect( Collectors.toList() ) );
 
+
+
+        // memory consumption
+        final Map<String, Object> l_memory = new HashMap<>();
+
+        final Map<String, Object> l_memoryexecution = new HashMap<>();
+        l_memory.put( "execution", l_memoryexecution );
+
+        Stream.of(
+            "freememory",
+            "usedmemory",
+            "usedmemory",
+            "totalmemory"
+        ).forEach( i -> l_memoryexecution.put( i,
+                          IntStream.rangeClosed( 0, m_runs )
+                                   .mapToObj( j -> l_statistic.get( MessageFormat.format( "{0}-{1}", String.format( m_numberpadding, j ), i ) ) )
+                                   .collect( Collectors.toList() )
+        ) );
+
+
         // create main object structure
         final Map<String, Object> l_result = new HashMap<>();
-        l_result.put( "time", l_time );
         l_result.put( "configuration", l_configuration );
+        l_result.put( "time", l_time );
+        l_result.put( "memory", l_memory );
 
         try
         {
@@ -395,9 +444,9 @@ public final class CScenario implements IScenario
         m_neighborhood.clear();
         Runtime.getRuntime().gc();
         this.memory(
-            String.format( m_numberpadding, p_run ) + "-usedmemory-start",
-            String.format( m_numberpadding, p_run ) + "-totalmemory-start",
-            String.format( m_numberpadding, p_run ) + "-freememory-start"
+            String.format( m_numberpadding, p_run ) + "-usedmemory",
+            String.format( m_numberpadding, p_run ) + "-totalmemory",
+            String.format( m_numberpadding, p_run ) + "-freememory"
         );
 
         m_runtime.accept(
@@ -417,9 +466,9 @@ public final class CScenario implements IScenario
         );
 
         this.memory(
-            String.format( m_numberpadding, p_run ) + "-usedmemory-stop",
-            String.format( m_numberpadding, p_run ) + "-totalmemory-stop",
-            String.format( m_numberpadding, p_run ) + "-freememory-stop"
+            String.format( m_numberpadding, p_run ) + "-usedmemory",
+            String.format( m_numberpadding, p_run ) + "-totalmemory",
+            String.format( m_numberpadding, p_run ) + "-freememory"
         );
     }
 
