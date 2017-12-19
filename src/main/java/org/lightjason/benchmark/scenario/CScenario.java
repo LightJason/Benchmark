@@ -257,7 +257,6 @@ public final class CScenario implements IScenario
                    } );
         l_time.put( "cycle", l_cycle.entrySet().stream().map( Map.Entry::getValue ).collect( Collectors.toList() ) );
 
-
         // create main object structure
         final Map<String, Object> l_result = new HashMap<>();
         l_result.put( "time", l_time );
@@ -394,8 +393,23 @@ public final class CScenario implements IScenario
     private void iteration( @Nonnegative int p_run )
     {
         m_neighborhood.clear();
-
         Runtime.getRuntime().gc();
+
+        m_statistic.accept(
+            MessageFormat.format( "{0}-usedmemory", String.format( m_numberpadding, p_run ) ),
+            Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()
+        );
+
+        m_statistic.accept(
+            MessageFormat.format( "{0}-totalmemory", String.format( m_numberpadding, p_run ) ),
+            Runtime.getRuntime().totalMemory()
+        );
+
+        m_statistic.accept(
+            MessageFormat.format( "{0}-freememory", String.format( m_numberpadding, p_run ) ),
+            Runtime.getRuntime().freeMemory()
+        );
+
         m_runtime.accept(
             m_statistic.starttimer( MessageFormat.format( "{0}-agentinitialize", String.format( m_numberpadding, p_run ) ) ).stop(
                 m_neighborhood.buildneighbor(
