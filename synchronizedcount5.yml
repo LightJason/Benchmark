@@ -3,6 +3,7 @@ global:
     warmup: 5
     iterations: 3
     memoryrefresh: 2500
+    prettyprint: true
 
 runtime:
     type: synchronized
