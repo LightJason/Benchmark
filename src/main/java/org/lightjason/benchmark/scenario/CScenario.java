@@ -203,25 +203,27 @@ public final class CScenario implements IScenario
 
         // --- start initialization ----------------------------------------------------------------------------------------------------------------------------
         Runtime.getRuntime().gc();
+        try
+        {
 
-        // action instantiation
-        final Set<IAction> l_action = this.action( m_neighborhood );
+            // action instantiation
+            final Set<IAction> l_action = this.action( m_neighborhood );
 
-        // create variable builder
-        final IVariableBuilder l_variablebuilder = new CBenchmarkAgent.CVariableBuilder(
-            Collections.unmodifiableSet(
-                l_configuration.<Map<String, Object>>getOrDefault( Collections.emptyMap(), "agent", "constant" )
-                               .entrySet()
-                               .parallelStream()
-                               .map( i -> new CConstant<>( i.getKey(), i.getValue() ) )
-                               .collect( Collectors.toSet() )
-            )
-        );
+            // create variable builder
+            final IVariableBuilder l_variablebuilder = new CBenchmarkAgent.CVariableBuilder(
+                Collections.unmodifiableSet(
+                    l_configuration.<Map<String, Object>>getOrDefault( Collections.emptyMap(), "agent", "constant" )
+                        .entrySet()
+                        .parallelStream()
+                        .map( i -> new CConstant<>( i.getKey(), i.getValue() ) )
+                        .collect( Collectors.toSet() )
+                )
+            );
 
-        // agent generators
-        final String l_root = Paths.get( p_file ).getParent() == null ? "" : Paths.get( p_file ).getParent().toString();
-        m_agentdefinition = Collections.unmodifiableMap(
-            l_configuration.<Map<String, Object>>getOrDefault( Collections.emptyMap(), "agent", "source" )
+            // agent generators
+            final String l_root = Paths.get( p_file ).getParent() == null ? "" : Paths.get( p_file ).getParent().toString();
+            m_agentdefinition = Collections.unmodifiableMap(
+                l_configuration.<Map<String, Object>>getOrDefault( Collections.emptyMap(), "agent", "source" )
                     .entrySet()
                     .parallelStream()
                     .collect(
@@ -229,7 +231,14 @@ public final class CScenario implements IScenario
                             i -> this.generator( Paths.get( l_root, i.getKey() ).toString(), l_action, l_variablebuilder, m_neighborhood ),
                             i -> i.getValue() instanceof String ? parse( i.getValue().toString() ) : objecttolistfunction( i.getValue() )
                         ) )
-        );
+            );
+        }
+        catch ( final Exception l_exception )
+        {
+            m_memorylogging.interrupt();
+            m_alivelogging.interrupt();
+            throw l_exception;
+        }
     }
 
     /**
@@ -337,6 +346,8 @@ public final class CScenario implements IScenario
         catch ( final IOException l_exception )
         {
             Logger.error( "error on storing [{0}]", l_exception.getMessage() );
+            m_memorylogging.interrupt();
+            m_alivelogging.interrupt();
             throw new UncheckedIOException( l_exception );
         }
 
