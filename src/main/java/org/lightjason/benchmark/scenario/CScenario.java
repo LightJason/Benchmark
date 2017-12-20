@@ -45,8 +45,10 @@ import org.lightjason.benchmark.runtime.ERuntime;
 import org.lightjason.benchmark.runtime.IRuntime;
 import org.lightjason.benchmark.statistic.CDescriptiveStatisticSerializer;
 import org.lightjason.benchmark.statistic.CSummaryStatisticSerializer;
+import org.lightjason.benchmark.statistic.CTimeline;
 import org.lightjason.benchmark.statistic.EStatistic;
 import org.lightjason.benchmark.statistic.IStatistic;
+import org.lightjason.benchmark.statistic.ITimeline;
 import org.pmw.tinylog.Logger;
 import org.yaml.snakeyaml.Yaml;
 
@@ -82,6 +84,10 @@ public final class CScenario implements IScenario
      * statistic
      */
     private final IStatistic m_statistic;
+    /**
+     * memory
+     */
+    private final ITimeline m_memory = new CTimeline();
     /**
      * runtime
      */
@@ -143,24 +149,34 @@ public final class CScenario implements IScenario
                             .apply( l_configuration.<Number>getOrDefault( 1, "runtime", "value" ) );
         m_neighborhood = ENeighborhood.from( l_configuration.getOrDefault( "", "runtime", "neighborhood" ) ).build();
 
+        final long l_memoryrefreshrate = l_configuration.<Number>getOrDefault( 0, "global", "memoryrefresh" ).longValue();
+        if ( l_memoryrefreshrate > 0 )
+            new Thread( () ->
+            {
+                while ( true )
+                {
+                    m_memory.accept( "totalmemory", Runtime.getRuntime().totalMemory() );
+                    m_memory.accept( "freememory", Runtime.getRuntime().freeMemory() );
+                    m_memory.accept( "usedmemory", Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory() );
+
+                    try
+                    {
+                        Thread.sleep( l_memoryrefreshrate );
+                    }
+                    catch ( final InterruptedException l_exception )
+                    {
+                        Logger.trace( l_exception );
+                        break;
+                    }
+                }
+            } ).start();
+
 
         // --- start initialization ----------------------------------------------------------------------------------------------------------------------------
         Runtime.getRuntime().gc();
-        this.memory(
-            String.format( m_numberpadding, -3 ) + "-usedmemory",
-            String.format( m_numberpadding, -3 ) + "-totalmemory",
-            String.format( m_numberpadding, -3 ) + "-freememory"
-        );
 
         // action instantiation
         final Set<IAction> l_action = this.action( m_neighborhood );
-
-        this.memory(
-            String.format( m_numberpadding, -2 ) + "-usedmemory",
-            String.format( m_numberpadding, -2 ) + "-totalmemory",
-            String.format( m_numberpadding, -2 ) + "-freememory"
-        );
-
 
         // create variable builder
         final IVariableBuilder l_variablebuilder = new CBenchmarkAgent.CVariableBuilder(
@@ -173,13 +189,6 @@ public final class CScenario implements IScenario
             )
         );
 
-        this.memory(
-            String.format( m_numberpadding, -1 ) + "-usedmemory",
-            String.format( m_numberpadding, -1 ) + "-totalmemory",
-            String.format( m_numberpadding, -1 ) + "-freememory"
-        );
-
-
         // agent generators
         final String l_root = Paths.get( p_file ).getParent() == null ? "" : Paths.get( p_file ).getParent().toString();
         m_agentdefinition = Collections.unmodifiableMap(
@@ -191,12 +200,6 @@ public final class CScenario implements IScenario
                             i -> this.generator( Paths.get( l_root, i.getKey() ).toString(), l_action, l_variablebuilder, m_neighborhood ),
                             i -> i.getValue() instanceof String ? parse( i.getValue().toString() ) : objecttolistfunction( i.getValue() )
                         ) )
-        );
-
-        this.memory(
-            String.format( m_numberpadding, 0 ) + "-usedmemory",
-            String.format( m_numberpadding, 0 ) + "-totalmemory",
-            String.format( m_numberpadding, 0 ) + "-freememory"
         );
     }
 
@@ -286,30 +289,11 @@ public final class CScenario implements IScenario
         l_time.put( "cycle", l_cycle.entrySet().stream().map( Map.Entry::getValue ).collect( Collectors.toList() ) );
 
 
-
-        // memory consumption
-        final Map<String, Object> l_memory = new HashMap<>();
-
-        final Map<String, Object> l_memoryexecution = new HashMap<>();
-        l_memory.put( "execution", l_memoryexecution );
-
-        Stream.of(
-            "freememory",
-            "usedmemory",
-            "usedmemory",
-            "totalmemory"
-        ).forEach( i -> l_memoryexecution.put( i,
-                          IntStream.rangeClosed( -3, m_runs )
-                                   .mapToObj( j -> l_statistic.get( MessageFormat.format( "{0}-{1}", String.format( m_numberpadding, j ), i ) ) )
-                                   .collect( Collectors.toList() )
-        ) );
-
-
         // create main object structure
         final Map<String, Object> l_result = new HashMap<>();
         l_result.put( "configuration", l_configuration );
         l_result.put( "time", l_time );
-        l_result.put( "memory", l_memory );
+        l_result.put( "memory", m_memory.get() );
 
         try
         {
@@ -445,11 +429,6 @@ public final class CScenario implements IScenario
     {
         m_neighborhood.clear();
         Runtime.getRuntime().gc();
-        this.memory(
-            String.format( m_numberpadding, p_run ) + "-usedmemory",
-            String.format( m_numberpadding, p_run ) + "-totalmemory",
-            String.format( m_numberpadding, p_run ) + "-freememory"
-        );
 
         m_runtime.accept(
             m_statistic.starttimer( MessageFormat.format( "{0}-agentinitialize", String.format( m_numberpadding, p_run ) ) ).stop(
@@ -466,26 +445,6 @@ public final class CScenario implements IScenario
             ),
             new ImmutablePair<>( String.format( m_numberpadding, p_run ) + "-execution", m_statistic )
         );
-
-        this.memory(
-            String.format( m_numberpadding, p_run ) + "-usedmemory",
-            String.format( m_numberpadding, p_run ) + "-totalmemory",
-            String.format( m_numberpadding, p_run ) + "-freememory"
-        );
-    }
-
-
-    /**
-     * set the memory statistic
-     *  @param p_totalmemory message for total memory
-     * @param p_freememory messag for free memeory
-     * @param p_usedmemory message for used memory
-     */
-    private void memory( @Nonnull final String p_totalmemory, @Nonnull final String p_freememory, @Nonnull final String p_usedmemory )
-    {
-        m_statistic.accept( p_totalmemory, Runtime.getRuntime().totalMemory() );
-        m_statistic.accept( p_freememory, Runtime.getRuntime().freeMemory() );
-        m_statistic.accept( p_usedmemory, Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory() );
     }
 
 
