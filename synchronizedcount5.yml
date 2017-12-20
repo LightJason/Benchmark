@@ -2,7 +2,8 @@ global:
     runs: 16
     warmup: 5
     iterations: 3
-    memoryrefresh: 2500
+    memorylograte: 2500
+    alive: 480000
     prettyprint: true
 
 runtime:
