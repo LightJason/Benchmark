@@ -95,7 +95,7 @@ public final class CScenario implements IScenario
     /**
      * aline message thread
      */
-    private final Thread m_alive;
+    private final Thread m_alivelogging;
     /**
      * runtime
      */
@@ -181,7 +181,7 @@ public final class CScenario implements IScenario
         m_memorylogging.start();
 
         final long l_alive = l_configuration.<Number>getOrDefault( 0, "global", "alive" ).longValue();
-        m_alive = l_alive < 1
+        m_alivelogging = l_alive < 1
                   ? new Thread()
                   : new Thread( () ->
                   {
@@ -190,7 +190,7 @@ public final class CScenario implements IScenario
                           Logger.info( "benchmark is currently running" );
                           try
                           {
-                              Thread.sleep( l_memorylograte );
+                              Thread.sleep( l_alive );
                           }
                           catch ( final InterruptedException l_exception )
                           {
@@ -198,7 +198,7 @@ public final class CScenario implements IScenario
                           }
                       }
                   } );
-        m_alive.start();
+        m_alivelogging.start();
 
 
         // --- start initialization ----------------------------------------------------------------------------------------------------------------------------
@@ -366,7 +366,7 @@ public final class CScenario implements IScenario
                  } );
 
         m_memorylogging.interrupt();
-        m_alive.interrupt();
+        m_alivelogging.interrupt();
     }
 
     /**
