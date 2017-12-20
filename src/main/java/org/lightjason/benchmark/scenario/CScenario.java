@@ -89,6 +89,10 @@ public final class CScenario implements IScenario
      */
     private final ITimeline m_memory = new CTimeline();
     /**
+     * memory logging thread
+     */
+    private final Thread m_memorylogging;
+    /**
      * runtime
      */
     private final IRuntime m_runtime;
@@ -150,26 +154,27 @@ public final class CScenario implements IScenario
         m_neighborhood = ENeighborhood.from( l_configuration.getOrDefault( "", "runtime", "neighborhood" ) ).build();
 
         final long l_memoryrefreshrate = l_configuration.<Number>getOrDefault( 0, "global", "memoryrefresh" ).longValue();
-        if ( l_memoryrefreshrate > 0 )
-            new Thread( () ->
-            {
-                while ( true )
-                {
-                    m_memory.accept( "totalmemory", Runtime.getRuntime().totalMemory() );
-                    m_memory.accept( "freememory", Runtime.getRuntime().freeMemory() );
-                    m_memory.accept( "usedmemory", Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory() );
+        m_memorylogging = l_memoryrefreshrate < 1
+                         ? new Thread()
+                         : new Thread( () ->
+                         {
+                             while ( true )
+                             {
+                                 m_memory.accept( "totalmemory", Runtime.getRuntime().totalMemory() );
+                                 m_memory.accept( "freememory", Runtime.getRuntime().freeMemory() );
+                                 m_memory.accept( "usedmemory", Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory() );
 
-                    try
-                    {
-                        Thread.sleep( l_memoryrefreshrate );
-                    }
-                    catch ( final InterruptedException l_exception )
-                    {
-                        Logger.trace( l_exception );
-                        break;
-                    }
-                }
-            } ).start();
+                                 try
+                                 {
+                                     Thread.sleep( l_memoryrefreshrate );
+                                 }
+                                 catch ( final InterruptedException l_exception )
+                                 {
+                                     break;
+                                 }
+                             }
+                         } );
+        m_memorylogging.start();
 
 
         // --- start initialization ----------------------------------------------------------------------------------------------------------------------------
@@ -335,6 +340,8 @@ public final class CScenario implements IScenario
                      } );
                      this.store();
                  } );
+
+        m_memorylogging.interrupt();
     }
 
     /**
