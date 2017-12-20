@@ -87,11 +87,15 @@ public final class CScenario implements IScenario
     /**
      * memory
      */
-    private final ITimeline m_memory = new CTimeline();
+    private final ITimeline m_memorystatistic = new CTimeline();
     /**
      * memory logging thread
      */
     private final Thread m_memorylogging;
+    /**
+     * aline message thread
+     */
+    private final Thread m_alive;
     /**
      * runtime
      */
@@ -153,20 +157,20 @@ public final class CScenario implements IScenario
                             .apply( l_configuration.<Number>getOrDefault( 1, "runtime", "value" ) );
         m_neighborhood = ENeighborhood.from( l_configuration.getOrDefault( "", "runtime", "neighborhood" ) ).build();
 
-        final long l_memoryrefreshrate = l_configuration.<Number>getOrDefault( 0, "global", "memoryrefresh" ).longValue();
-        m_memorylogging = l_memoryrefreshrate < 1
+        final long l_memorylograte = l_configuration.<Number>getOrDefault( 0, "global", "memorylograte" ).longValue();
+        m_memorylogging = l_memorylograte < 1
                          ? new Thread()
                          : new Thread( () ->
                          {
                              while ( true )
                              {
-                                 m_memory.accept( "totalmemory", Runtime.getRuntime().totalMemory() );
-                                 m_memory.accept( "freememory", Runtime.getRuntime().freeMemory() );
-                                 m_memory.accept( "usedmemory", Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory() );
+                                 m_memorystatistic.accept( "totalmemory", Runtime.getRuntime().totalMemory() );
+                                 m_memorystatistic.accept( "freememory", Runtime.getRuntime().freeMemory() );
+                                 m_memorystatistic.accept( "usedmemory", Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory() );
 
                                  try
                                  {
-                                     Thread.sleep( l_memoryrefreshrate );
+                                     Thread.sleep( l_memorylograte );
                                  }
                                  catch ( final InterruptedException l_exception )
                                  {
@@ -175,6 +179,26 @@ public final class CScenario implements IScenario
                              }
                          } );
         m_memorylogging.start();
+
+        final long l_alive = l_configuration.<Number>getOrDefault( 0, "global", "alive" ).longValue();
+        m_alive = l_alive < 1
+                  ? new Thread()
+                  : new Thread( () ->
+                  {
+                      while ( true )
+                      {
+                          Logger.info( "benchmark is currently running" );
+                          try
+                          {
+                              Thread.sleep( l_memorylograte );
+                          }
+                          catch ( final InterruptedException l_exception )
+                          {
+                              break;
+                          }
+                      }
+                  } );
+        m_alive.start();
 
 
         // --- start initialization ----------------------------------------------------------------------------------------------------------------------------
@@ -298,7 +322,7 @@ public final class CScenario implements IScenario
         final Map<String, Object> l_result = new HashMap<>();
         l_result.put( "configuration", l_configuration );
         l_result.put( "time", l_time );
-        l_result.put( "memory", m_memory.get() );
+        l_result.put( "memory", m_memorystatistic.get() );
 
         try
         {
@@ -342,6 +366,7 @@ public final class CScenario implements IScenario
                  } );
 
         m_memorylogging.interrupt();
+        m_alive.interrupt();
     }
 
     /**
