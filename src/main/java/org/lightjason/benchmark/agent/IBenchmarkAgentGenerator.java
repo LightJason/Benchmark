@@ -38,4 +38,11 @@ public interface IBenchmarkAgentGenerator extends IAgentGenerator<IBenchmarkAgen
      */
     IBenchmarkAgentGenerator reset();
 
+    /**
+     * returns the base name of the agents
+     *
+     * @return base name
+     */
+    String basename();
+
 }

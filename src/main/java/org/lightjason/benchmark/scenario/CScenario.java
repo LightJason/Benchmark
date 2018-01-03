@@ -327,11 +327,19 @@ public final class CScenario implements IScenario
         l_time.put( "cycle", l_cycle.entrySet().stream().map( Map.Entry::getValue ).collect( Collectors.toList() ) );
 
 
+
         // create main object structure
         final Map<String, Object> l_result = new HashMap<>();
         l_result.put( "configuration", l_configuration );
         l_result.put( "time", l_time );
         l_result.put( "memory", m_memorystatistic.get() );
+        l_result.put(
+            "scenariosize",
+            IntStream.rangeClosed( 1, m_runs )
+                     .boxed()
+                     .map( i -> m_agentdefinition.entrySet().stream().collect( Collectors.toMap( j -> j.getKey().basename(), j -> j.getValue().apply( i ) ) ) )
+                     .collect( Collectors.toList() )
+        );
 
         try
         {

@@ -187,6 +187,12 @@ public abstract class IBaseBenchmarkAgent extends IBaseAgent<IBenchmarkAgent> im
         }
 
         @Override
+        public final String basename()
+        {
+            return m_basename;
+        }
+
+        @Override
         public final int hashCode()
         {
             return m_basename.hashCode();
