@@ -59,6 +59,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.Collections;
@@ -425,17 +426,18 @@ public final class CScenario implements IScenario
     private IBenchmarkAgentGenerator generator( @Nonnull final String p_asl, @Nonnull final Set<IAction> p_action,
                                                 @Nonnull final IVariableBuilder p_variablebuilder, @Nonnull final INeighborhood p_neighborhood )
     {
-        Logger.info( "reading asl file [{0}]", p_asl );
+        final Path l_asl = Paths.get( p_asl );
+        Logger.info( "reading asl file [{0}]", l_asl );
         try
         (
-            final InputStream l_stream = new FileInputStream( p_asl );
+            final InputStream l_stream = new FileInputStream( l_asl.toFile() );
         )
         {
             return m_statistic.starttimer( "parsing" ).stop( new CBenchmarkAgent.CGenerator(
                 l_stream,
                 p_action,
                 p_variablebuilder,
-                p_asl.toLowerCase( Locale.ROOT ).replace( ".asl", "" ),
+                l_asl.getFileName().toString().toLowerCase( Locale.ROOT ).replace( ".asl", "" ),
                 p_neighborhood
             ) );
         }
