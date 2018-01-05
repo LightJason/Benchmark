@@ -59,12 +59,6 @@ public final class CMain
         if ( p_args.length != 1 )
             throw new RuntimeException( "argument with scenario configuration must be set" );
 
-        /*
-        https://bl.ocks.org/mbostock/4061502
-        http://bl.ocks.org/mbostock/3943967
-        https://bl.ocks.org/mbostock/1256572
-        http://square.github.io/crossfilter/
-        */
         CScenario.build( p_args[0] ).run();
     }
 

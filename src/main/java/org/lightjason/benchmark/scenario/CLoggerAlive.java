@@ -21,23 +21,76 @@
  * @endcond
  */
 
-package org.lightjason.benchmark.statistic;
+package org.lightjason.benchmark.scenario;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.function.BiConsumer;
-import java.util.function.Supplier;
+import org.pmw.tinylog.Logger;
+
+import javax.annotation.Nonnegative;
+import java.util.concurrent.atomic.AtomicReference;
 
 
 /**
- * timeline statistic
+ * alive logger
  */
-public interface ITimeline extends BiConsumer<String, Number>, Supplier<Map<String, Collection<Double>>>
+public final class CLoggerAlive
 {
+    /**
+     * instance
+     */
+    private static final AtomicReference<CLoggerAlive> INSTANCE = new AtomicReference<>();
+    /**
+     * running thread
+     */
+    private final Thread m_thread;
 
     /**
-     * clears all data
+     * ctor
+     *
+     * @param p_alivetime alive time
      */
-    void clear();
+    private CLoggerAlive( @Nonnegative final long p_alivetime )
+    {
+        m_thread = new Thread( () ->
+        {
+            while ( true )
+            {
+                Logger.info( "benchmark is currently running" );
+                try
+                {
+                    Thread.sleep( p_alivetime );
+                }
+                catch ( final InterruptedException l_exception )
+                {
+                    break;
+                }
+            }
+        } );
 
+        m_thread.start();
+    }
+
+    /**
+     * buld logger
+     *
+     * @param p_alivetime alive thread
+     */
+    public static void build( @Nonnegative final long p_alivetime )
+    {
+        if ( p_alivetime > 0 )
+            INSTANCE.compareAndSet( null, new CLoggerAlive( p_alivetime ) );
+    }
+
+    /**
+     * interrupts logging
+     */
+    public static void interrupt()
+    {
+        INSTANCE.getAndUpdate( i ->
+        {
+            if ( i != null )
+                i.m_thread.interrupt();
+
+            return i;
+        } );
+    }
 }

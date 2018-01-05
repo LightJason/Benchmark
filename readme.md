@@ -12,3 +12,8 @@ This repository contains a _benchmarking suite_ for the LightJason multi-agent f
 * [Jaxcenter - Aus der Java-Trickkiste: Microbenchmarking](https://jaxenter.de/aus-der-java-trickkiste-microbenchmarking-24155)
 
 For our benchmark scenarios we are using our [docker container](https://hub.docker.com/r/lightjason/benchmark/) with the shellcommand ```benchmark```, that allows to run the scenario defintion
+
+
+## Configuration
+
+## Data Output

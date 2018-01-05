@@ -23,12 +23,9 @@
 
 package org.lightjason.benchmark.scenario;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.math3.stat.descriptive.StatisticalSummary;
 import org.lightjason.agentspeak.action.IAction;
 import org.lightjason.agentspeak.common.CCommon;
 import org.lightjason.agentspeak.language.execution.IVariableBuilder;
@@ -43,12 +40,8 @@ import org.lightjason.benchmark.neighborhood.ENeighborhood;
 import org.lightjason.benchmark.neighborhood.INeighborhood;
 import org.lightjason.benchmark.runtime.ERuntime;
 import org.lightjason.benchmark.runtime.IRuntime;
-import org.lightjason.benchmark.statistic.CDescriptiveStatisticSerializer;
-import org.lightjason.benchmark.statistic.CSummaryStatisticSerializer;
-import org.lightjason.benchmark.statistic.CTimeline;
 import org.lightjason.benchmark.statistic.EStatistic;
 import org.lightjason.benchmark.statistic.IStatistic;
-import org.lightjason.benchmark.statistic.ITimeline;
 import org.pmw.tinylog.Logger;
 import org.yaml.snakeyaml.Yaml;
 
@@ -63,7 +56,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -86,18 +78,6 @@ public final class CScenario implements IScenario
      */
     private final IStatistic m_statistic;
     /**
-     * memory
-     */
-    private final ITimeline m_memorystatistic = new CTimeline();
-    /**
-     * memory logging thread
-     */
-    private final Thread m_memorylogging;
-    /**
-     * aline message thread
-     */
-    private final Thread m_alivelogging;
-    /**
      * runtime
      */
     private final IRuntime m_runtime;
@@ -114,13 +94,17 @@ public final class CScenario implements IScenario
      */
     private final int m_warmup;
     /**
+     * memory log tim
+     */
+    private final long m_memorylograte;
+    /**
      * number padding
      */
     private final String m_numberpadding;
     /**
      * result filename
      */
-    private final String m_resultfilename;
+    private final File m_resultfilename;
     /**
      * serializing feature of json result
      */
@@ -128,11 +112,12 @@ public final class CScenario implements IScenario
     /**
      * map with asl pathes and generatoring functions
      */
-    private final Map<IBenchmarkAgentGenerator, Function<Number, Number>> m_agentdefinition;
+    private final Map<IBenchmarkAgentGenerator, Function<Number, Number>> m_agentgenerator;
     /**
      * neigborhood structure
      */
     private final INeighborhood m_neighborhood;
+
 
 
     /**
@@ -144,7 +129,7 @@ public final class CScenario implements IScenario
     {
         final ITree l_configuration = load( p_file );
 
-        m_resultfilename = p_file.replace( ".yaml", "" ).replace( ".yml", "" ) + ".json";
+        m_resultfilename = new File( p_file.replace( ".yaml", "" ).replace( ".yml", "" ) + ".json" );
         m_statistic = EStatistic.from( l_configuration.getOrDefault( "summary", "global", "statistic" ) ).build();
         m_runs = l_configuration.<Number>getOrDefault( 1, "global", "runs" ).intValue();
         m_iteration = l_configuration.<Number>getOrDefault( 1, "global", "iterations" ).intValue();
@@ -158,52 +143,15 @@ public final class CScenario implements IScenario
                             .apply( l_configuration.<Number>getOrDefault( 1, "runtime", "value" ) );
         m_neighborhood = ENeighborhood.from( l_configuration.getOrDefault( "", "runtime", "neighborhood" ) ).build();
 
-        final long l_memorylograte = l_configuration.<Number>getOrDefault( 0, "global", "memorylograte" ).longValue();
-        m_memorylogging = l_memorylograte < 1
-                         ? new Thread()
-                         : new Thread( () ->
-                         {
-                             while ( true )
-                             {
-                                 m_memorystatistic.accept( "totalmemory", Runtime.getRuntime().totalMemory() );
-                                 m_memorystatistic.accept( "freememory", Runtime.getRuntime().freeMemory() );
-                                 m_memorystatistic.accept( "usedmemory", Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory() );
+        m_memorylograte = l_configuration.<Number>getOrDefault( 0, "global", "memorylograte" ).longValue();
+        CLoggerMemory.build( m_memorylograte );
 
-                                 try
-                                 {
-                                     Thread.sleep( l_memorylograte );
-                                 }
-                                 catch ( final InterruptedException l_exception )
-                                 {
-                                     break;
-                                 }
-                             }
-                         } );
-        m_memorylogging.start();
-
-        final long l_alive = l_configuration.<Number>getOrDefault( 0, "global", "alive" ).longValue();
-        m_alivelogging = l_alive < 1
-                  ? new Thread()
-                  : new Thread( () ->
-                  {
-                      while ( true )
-                      {
-                          Logger.info( "benchmark is currently running" );
-                          try
-                          {
-                              Thread.sleep( l_alive );
-                          }
-                          catch ( final InterruptedException l_exception )
-                          {
-                              break;
-                          }
-                      }
-                  } );
-        m_alivelogging.start();
+        CLoggerAlive.build( l_configuration.<Number>getOrDefault( 0, "global", "alive" ).longValue() );
 
 
         // --- start initialization ----------------------------------------------------------------------------------------------------------------------------
         Runtime.getRuntime().gc();
+        CLoggerMemory.swappause();
         try
         {
 
@@ -223,7 +171,7 @@ public final class CScenario implements IScenario
 
             // agent generators
             final String l_root = Paths.get( p_file ).getParent() == null ? "" : Paths.get( p_file ).getParent().toString();
-            m_agentdefinition = Collections.unmodifiableMap(
+            m_agentgenerator = Collections.unmodifiableMap(
                 l_configuration.<Map<String, Object>>getOrDefault( Collections.emptyMap(), "agent", "source" )
                     .entrySet()
                     .parallelStream()
@@ -236,10 +184,11 @@ public final class CScenario implements IScenario
         }
         catch ( final Exception l_exception )
         {
-            m_memorylogging.interrupt();
-            m_alivelogging.interrupt();
+            CLoggerMemory.interrupt();
+            CLoggerAlive.interrupt();
             throw l_exception;
         }
+        CLoggerMemory.swappause();
     }
 
     /**
@@ -262,7 +211,7 @@ public final class CScenario implements IScenario
      */
     private static ITree load( @Nonnull final String p_file )
     {
-        Logger.info( "read configuration file [{0}]", p_file );
+        Logger.info( "read configuration file [{}]", p_file );
         try
             (
                 final InputStream l_stream = new FileInputStream( p_file )
@@ -273,94 +222,46 @@ public final class CScenario implements IScenario
         }
         catch ( final Exception l_exception )
         {
-            Logger.error( "error on file reading [{0}]", l_exception.getMessage() );
+            Logger.error( "error on file reading [{}]", l_exception.getMessage() );
             throw new RuntimeException( l_exception );
         }
     }
 
-    private void store()
+    /**
+     * stores the data
+     *
+     * @param p_iteration iteration
+     */
+    private void store( @Nonnegative final int p_iteration )
     {
-        Runtime.getRuntime().gc();
-        Logger.info( "store measurement result in [{0}]", m_resultfilename );
-
-        // get measurement data
-        final Map<String, StatisticalSummary> l_statistic = m_statistic.get();
-
-
-        // create configuration structure
-        final Map<String, Object> l_configuration = new HashMap<>();
-        l_configuration.put( "runs", m_runs );
-        l_configuration.put( "iteration", m_iteration );
-        l_configuration.put( "warmup", m_warmup );
-        l_configuration.put( "runtime", m_runtime.toString() );
-        l_configuration.put( "processors", Runtime.getRuntime().availableProcessors() );
-
-
-
-        // create time execution
-        final Map<String, Object> l_time = new HashMap<>();
-
-        l_time.put( "agentinitialize",
-                    IntStream.rangeClosed( 1, m_runs )
-                             .mapToObj( i -> l_statistic.get( MessageFormat.format( "{0}-agentinitialize", String.format( m_numberpadding, i ) ) ) )
-                             .collect( Collectors.toList() )
-        );
-
-        l_time.put( "execution",
-                    IntStream.rangeClosed( 1, m_runs )
-                             .mapToObj( i -> l_statistic.get( MessageFormat.format( "{0}-execution", String.format( m_numberpadding, i ) ) ) )
-                             .collect( Collectors.toList() )
-        );
-
-        final Map<Integer, Map<String, Object>> l_cycle = new HashMap<>();
-        l_statistic.entrySet()
-                   .stream()
-                   .filter( i -> i.getKey().startsWith( "cycle-" ) )
-                   .forEach( i ->
-                   {
-                       final String[] l_key = i.getKey().split( "-" );
-
-                       final Map<String, Object> l_map = l_cycle.getOrDefault( Integer.parseInt( l_key[1] ), new HashMap<>() );
-                       l_cycle.putIfAbsent( Integer.parseInt( l_key[1] ), l_map );
-
-                       l_map.put( l_key[2], i.getValue() );
-                   } );
-        l_time.put( "cycle", l_cycle.entrySet().stream().map( Map.Entry::getValue ).collect( Collectors.toList() ) );
-
-
-
-        // create main object structure
-        final Map<String, Object> l_result = new HashMap<>();
-        l_result.put( "configuration", l_configuration );
-        l_result.put( "time", l_time );
-        l_result.put( "memory", m_memorystatistic.get() );
-        l_result.put(
-            "scenariosize",
-            IntStream.rangeClosed( 1, m_runs )
-                     .boxed()
-                     .map( i -> m_agentdefinition.entrySet().stream().collect( Collectors.toMap( j -> j.getKey().basename(), j -> j.getValue().apply( i ) ) ) )
-                     .collect( Collectors.toList() )
-        );
-
         try
         {
-            new ObjectMapper()
-                .enable( m_serializationfeature )
-                .registerModules(
-                    new SimpleModule().addSerializer( CDescriptiveStatisticSerializer.CLASS, new CDescriptiveStatisticSerializer() ),
-                    new SimpleModule().addSerializer( CSummaryStatisticSerializer.CLASS, new CSummaryStatisticSerializer() )
-                )
-                .writeValue( new File( m_resultfilename ), l_result );
+            CWriter.store(
+                m_resultfilename,
+                m_serializationfeature,
+                p_iteration,
+                m_statistic,
+                i ->
+                {
+                    i.put( "runs", m_runs );
+                    i.put( "iteration", m_iteration );
+                    i.put( "warmup", m_warmup );
+                    i.put( "runtime", m_runtime.toString() );
+                    i.put( "memoryloggingrate", m_memorylograte );
+                    i.put( "processors", Runtime.getRuntime().availableProcessors() );
+                },
+                m_numberpadding,
+                m_runs,
+                m_agentgenerator
+            );
         }
-        catch ( final IOException l_exception )
+        catch ( final Exception l_exception )
         {
-            Logger.error( "error on storing [{0}]", l_exception.getMessage() );
-            m_memorylogging.interrupt();
-            m_alivelogging.interrupt();
-            throw new UncheckedIOException( l_exception );
+            Logger.error( "error on file reading [{}]", l_exception.getMessage() );
+            CLoggerMemory.interrupt();
+            CLoggerAlive.interrupt();
+            throw new RuntimeException( l_exception );
         }
-
-        Runtime.getRuntime().gc();
     }
 
     @Override
@@ -370,23 +271,25 @@ public final class CScenario implements IScenario
             IntStream.rangeClosed( 1, m_warmup )
                      .forEach( j -> IntStream.rangeClosed( 1, m_iteration ).forEach( i ->
                      {
-                         Logger.info( MessageFormat.format( "execute warum-up step [{0}] and iteration [{1}]", j, i ) );
+                         Logger.info( "execute warum-up step [{}] and iteration [{}]", j, i );
                          this.warmup( j );
                      } ) );
 
         IntStream.rangeClosed( 1, m_runs )
                  .forEach( j ->
                  {
-                     IntStream.rangeClosed( 1, m_iteration ).forEach( i ->
-                     {
-                         Logger.info( MessageFormat.format( "execute run step [{0}] and iteration [{1}]", j, i ) );
-                         this.iteration( j );
-                     } );
-                     this.store();
+                     IntStream.rangeClosed( 1, m_iteration )
+                              .forEach( i ->
+                              {
+                                  Logger.info( "execute run step [{}] and iteration [{}]", j, i );
+                                  this.iteration( j );
+                              } );
+
+                     this.store( j );
                  } );
 
-        m_memorylogging.interrupt();
-        m_alivelogging.interrupt();
+        CLoggerMemory.interrupt();
+        CLoggerAlive.interrupt();
     }
 
     /**
@@ -427,7 +330,7 @@ public final class CScenario implements IScenario
                                                 @Nonnull final IVariableBuilder p_variablebuilder, @Nonnull final INeighborhood p_neighborhood )
     {
         final Path l_asl = Paths.get( p_asl );
-        Logger.info( "reading asl file [{0}]", l_asl );
+        Logger.info( "reading asl file [{}]", l_asl );
         try
         (
             final InputStream l_stream = new FileInputStream( l_asl.toFile() );
@@ -443,7 +346,7 @@ public final class CScenario implements IScenario
         }
         catch ( final Exception l_exception )
         {
-            Logger.error( "error on reading asl file [{0}]", l_exception.getMessage() );
+            Logger.error( "error on reading asl file [{}]", l_exception.getMessage() );
             throw new RuntimeException( l_exception );
         }
     }
@@ -460,14 +363,14 @@ public final class CScenario implements IScenario
         Runtime.getRuntime().gc();
         m_runtime.accept(
             m_neighborhood.buildneighbor(
-                m_agentdefinition.entrySet()
-                                 .parallelStream()
-                                 .flatMap( i -> i.getKey().reset().generatemultiple(
+                m_agentgenerator.entrySet()
+                                .parallelStream()
+                                .flatMap( i -> i.getKey().reset().generatemultiple(
                                      i.getValue().apply( p_run % m_runs + 1 ).intValue(),
                                      IStatistic.EMPTY,
                                      String.format( m_numberpadding, p_run )
                                  ) )
-                                 .collect( Collectors.toSet() )
+                                .collect( Collectors.toSet() )
             ),
             new ImmutablePair<>( String.format( m_numberpadding, p_run ) + "-execution", IStatistic.EMPTY )
         );
@@ -483,21 +386,23 @@ public final class CScenario implements IScenario
         m_neighborhood.clear();
         Runtime.getRuntime().gc();
 
+        CLoggerMemory.swappause();
         m_runtime.accept(
             m_statistic.starttimer( MessageFormat.format( "{0}-agentinitialize", String.format( m_numberpadding, p_run ) ) ).stop(
                 m_neighborhood.buildneighbor(
-                    m_agentdefinition.entrySet()
-                                     .parallelStream()
-                                     .flatMap( i -> i.getKey().reset().generatemultiple(
+                    m_agentgenerator.entrySet()
+                                    .parallelStream()
+                                    .flatMap( i -> i.getKey().reset().generatemultiple(
                                          i.getValue().apply( p_run ).intValue(),
                                          m_statistic,
                                          String.format( m_numberpadding, p_run )
                                      ) )
-                                     .collect( Collectors.toSet() )
+                                    .collect( Collectors.toSet() )
                 )
             ),
             new ImmutablePair<>( String.format( m_numberpadding, p_run ) + "-execution", m_statistic )
         );
+        CLoggerMemory.swappause();
     }
 
 
@@ -509,14 +414,14 @@ public final class CScenario implements IScenario
      */
     private static Function<Number, Number> parse( @Nonnull final String p_formular )
     {
-        Logger.info( "parsing agent number formular [{0}]", p_formular );
+        Logger.info( "parsing agent number formular [{}]", p_formular );
         try
         {
             return new CFormularParser().apply( IOUtils.toInputStream( p_formular, "UTF-8" ) );
         }
         catch ( final IOException l_exception )
         {
-            Logger.error( "parsing error on formular [{0}]", p_formular );
+            Logger.error( "parsing error on formular [{}]", p_formular );
             throw new UncheckedIOException( l_exception );
         }
     }

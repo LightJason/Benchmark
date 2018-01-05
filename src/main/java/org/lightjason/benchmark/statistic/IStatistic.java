@@ -25,7 +25,6 @@ package org.lightjason.benchmark.statistic;
 
 import org.apache.commons.math3.stat.descriptive.StatisticalSummary;
 
-import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -43,9 +42,8 @@ public interface IStatistic extends BiConsumer<String, Number>, Supplier<Map<Str
     IStatistic EMPTY = new IStatistic()
     {
         @Override
-        public final IStatistic clear( @Nonnull final String p_name )
+        public final void clear()
         {
-            return this;
         }
 
         @Override
@@ -67,14 +65,10 @@ public interface IStatistic extends BiConsumer<String, Number>, Supplier<Map<Str
         }
     };
 
-
     /**
-     * clears a single statistic
-     *
-     * @param p_name name
-     * @return self reference
+     * clears all data
      */
-    IStatistic clear( @Nonnull final String p_name );
+    void clear();
 
     /**
      * starts a timer

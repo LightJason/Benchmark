@@ -28,7 +28,6 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 
 
@@ -51,6 +50,13 @@ public class CTimeline implements ITimeline
     @Override
     public final Map<String, Collection<Double>> get()
     {
-        return Collections.unmodifiableMap( m_statistic.asMap() );
+        return m_statistic.asMap();
+    }
+
+    @Override
+    public final void clear()
+    {
+        m_statistic.clear();
+        Runtime.getRuntime().gc();
     }
 }
