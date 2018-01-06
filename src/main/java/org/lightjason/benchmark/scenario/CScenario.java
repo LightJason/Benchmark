@@ -25,6 +25,7 @@ package org.lightjason.benchmark.scenario;
 
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.lightjason.agentspeak.action.IAction;
 import org.lightjason.agentspeak.common.CCommon;
@@ -52,6 +53,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.lang.management.ManagementFactory;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
@@ -249,6 +251,14 @@ public final class CScenario implements IScenario
                     i.put( "runtime", m_runtime.toString() );
                     i.put( "memoryloggingrate", m_memorylograte );
                     i.put( "processors", Runtime.getRuntime().availableProcessors() );
+                    i.put( "runtimearguments", ManagementFactory.getRuntimeMXBean().getInputArguments() );
+                    i.put( "javaversion", ManagementFactory.getRuntimeMXBean().getSpecVersion() );
+                    i.put( "vmname", ManagementFactory.getRuntimeMXBean().getVmName() );
+                    i.put( "vmvendor", ManagementFactory.getRuntimeMXBean().getVmVendor() );
+                    i.put( "vmversion", ManagementFactory.getRuntimeMXBean().getVmVersion() );
+                    i.put( "osarchitecture", SystemUtils.OS_ARCH );
+                    i.put( "osname", SystemUtils.OS_NAME );
+                    i.put( "osversion", SystemUtils.OS_VERSION );
                 },
                 m_numberpadding,
                 m_runs,
