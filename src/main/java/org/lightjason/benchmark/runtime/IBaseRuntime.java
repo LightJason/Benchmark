@@ -62,7 +62,7 @@ public abstract class IBaseRuntime implements IRuntime
     @Override
     public final String toString()
     {
-        return MessageFormat.format( "{0} ({1})", m_type, m_value );
+        return MessageFormat.format( "{0} {1}", m_type, m_value );
     }
 
     /**
