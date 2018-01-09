@@ -13,7 +13,7 @@ jobs:
 
         environment:
             TZ: "/usr/share/zoneinfo/Europe/Berlin"
-            JAVA_OPTS: "-XX:+AggressiveOpts -XX:+UseConcMarkSweepGC -Xmx3686M"
+            JAVA_OPTS: "-XX:+AggressiveOpts -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled -XX:CMSInitiatingOccupancyFraction=45 -Xmx3686M"
 
         steps:
             - checkout
@@ -25,6 +25,8 @@ jobs:
                 command: benchmark synchronizedcount5.yml
             - store_artifacts:
                 path: synchronizedcount5.json
+                path: synchronizedcount5.yml
+                path: counting.asl
             - run:
                 name: Github Release
                 command: |
