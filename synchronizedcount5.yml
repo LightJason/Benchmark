@@ -4,7 +4,6 @@ global:
     iterations: 3
     memorylograte: 2500
     alive: 480000
-    prettyprint: true
 
 runtime:
     type: synchronized
