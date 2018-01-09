@@ -25,7 +25,9 @@ jobs:
                 command: benchmark synchronizedcount5.yml
             - store_artifacts:
                 path: synchronizedcount5.json
+            - store_artifacts:    
                 path: synchronizedcount5.yml
+            - store_artifacts:    
                 path: counting.asl
             - run:
                 name: Github Release
