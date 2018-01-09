@@ -22,22 +22,14 @@ jobs:
                 command: git clean -xdf && git fetch -p && git gc --prune=now
             - run:
                 name: Execute Scenario
-                command: benchmark synchronizedcount5.yml
+                command: benchmark scenario/synchronizedcount5.yml
             - store_artifacts:    
-                path: synchronizedcount5.yml    
-            - store_artifacts:
-                path: *.json
-            - store_artifacts:    
-                path: *.asl
+                path: scenario/
             - run:
                 name: Github Release
                 command: |
                     if [ ! -z "$GITHUBTOKEN" ]; then
-                        mkdir /tmp/scenario
-                        cp synchronizedcount5.yml /tmp/scenario
-                        cp *.asl /tmp/scenario
-                        cp *.json /tmp/scenario
                         export TAG=$((CIRCLE_BUILD_NUM / 1000)).$((CIRCLE_BUILD_NUM / 100 % 10)).$((CIRCLE_BUILD_NUM % 100))
-                        ghr -t $GITHUBTOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME -c $CIRCLE_SHA1 -b "$(git log -1 $CIRCLE_SHA1 --pretty=format:%s)" $CIRCLE_BRANCH-v$TAG /tmp/scenario
+                        ghr -t $GITHUBTOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME -c $CIRCLE_SHA1 -b "$(git log -1 $CIRCLE_SHA1 --pretty=format:%s)" $CIRCLE_BRANCH-v$TAG scenario/
                     fi    
    
