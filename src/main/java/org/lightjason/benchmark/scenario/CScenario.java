@@ -142,7 +142,7 @@ public final class CScenario implements IScenario
         m_numberpadding = "%0" + Math.max( String.valueOf( m_runs ).length(), String.valueOf( m_warmup ).length() ) + "d";
 
         m_runtime = ERuntime.from( l_configuration.getOrDefault( "", "runtime", "type" ) )
-                            .apply( l_configuration.<Number>getOrDefault( 1, "runtime", "value" ) );
+                            .apply( l_configuration.<Number>getOrDefault( 1, "runtime", "threads" ) );
         m_neighborhood = ENeighborhood.from( l_configuration.getOrDefault( "", "runtime", "neighborhood" ) ).build();
 
         m_memorylograte = l_configuration.<Number>getOrDefault( 0, "global", "memorylograte" ).longValue();

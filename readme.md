@@ -17,6 +17,62 @@ This repository contains a _benchmarking suite_ for the LightJason multi-agent f
 For our benchmark scenarios we are using our [docker container](https://hub.docker.com/r/lightjason/benchmark/) with the shellcommand ```benchmark```, that allows to run the scenario defintion
 
 
-## Configuration
+## Scenario Configuration
+
+A scenario will be defined by a [YAML](https://en.wikipedia.org/wiki/YAML) file and a set of ASL++ files, which contains the agent code. The main structure of the YAML is:
+
+```yaml
+# main definition
+global:
+    
+    # statistic definition (default summary)
+    statistic: summary | descriptive
+
+    # warum-up runs of the runtime
+    warmup: 5
+    # number of runs of the simulation
+    runs: 15
+    # number of iteration on each run
+    iterations: 3
+    
+    # logging rate in milliseconds of memory, zero disables logging
+    memorylograte: 2500
+    # alive message in milliseconds to show a message on screen
+    alive: 480000
+
+    # output json will be formated
+    prettyprint: true | false
+
+
+# runtime definition for agent execution
+runtime:
+    
+    # type of the runtime (parameter t shows the possibility of setting threads)
+    type: synchronized | workstealing, | fixedsize(t) | cached | scheduled(t) | single
+    # number of thread which are used, not all runtimes uses this value (default 1)
+    threads: 3
+    
+    # neighborhood action type for an agent
+    neighborhood: leftright
+
+
+# agent definition
+agent:
+
+    # constants / variables of an agent
+    constant:
+        MaxCount: 5
+
+    # agent sources, which are stored relative to the configuration file
+    source:
+    
+        # first agent script with a list of agent counts for each run
+        agent1.asl: [1, 2, 5, 10, 15, 30, 100, 200, 500, 1000, 5000, 10000, 50000, 100000, 500000]
+        
+        # second agent script with a formula for calculating agent count, "i" defines the run with is started with 1 
+        agent2.asl: "i^2"
+```        
 
 ## Data Output
+
+The result of a run is a [JSON](https://en.wikipedia.org/wiki/JSON) file with the statistic values of the runs. The statistic structure is defined of the statistic configuration.
