@@ -66,11 +66,11 @@ public final class CDescriptiveStatisticSerializer extends IBaseStatisticSeriali
     public final void serialize( final DescriptiveStatistics p_statistic, final JsonGenerator p_generator,
                                  final SerializerProvider p_serializer ) throws IOException
     {
-
         p_generator.writeStartObject();
         this.writejson( p_statistic, p_generator );
 
-
+        p_generator.writeNumberField( "populationvariance", p_statistic.getPopulationVariance() );
+        p_generator.writeNumberField( "quadraticmean", p_statistic.getQuadraticMean() );
         p_generator.writeNumberField( "geometricmean", p_statistic.getGeometricMean() );
         p_generator.writeNumberField( "25-percentile", p_statistic.getPercentile( 25 ) );
         p_generator.writeNumberField( "50-percentile", p_statistic.getPercentile( 50 ) );
