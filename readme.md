@@ -48,7 +48,7 @@ global:
 runtime:
     
     # type of the runtime (parameter t shows the possibility of setting threads)
-    type: synchronized | workstealing, | fixedsize(t) | cached | scheduled(t) | single
+    type: synchronized | workstealing | fixedsize(t) | cached | scheduled(t) | single
     # number of thread which are used, not all runtimes uses this value (default 1)
     threads: 3
     
