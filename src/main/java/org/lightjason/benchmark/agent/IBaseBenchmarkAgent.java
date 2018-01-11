@@ -111,7 +111,7 @@ public abstract class IBaseBenchmarkAgent extends IBaseAgent<IBenchmarkAgent> im
     @Override
     public final boolean equals( final Object p_object )
     {
-        return ( p_object != null ) && ( p_object instanceof IBaseBenchmarkAgent ) && ( p_object.hashCode() == this.hashCode() );
+        return ( p_object != null ) && ( p_object instanceof IBenchmarkAgent ) && ( p_object.hashCode() == this.hashCode() );
     }
 
     @Override
@@ -208,7 +208,7 @@ public abstract class IBaseBenchmarkAgent extends IBaseAgent<IBenchmarkAgent> im
         @Override
         public final boolean equals( final Object p_object )
         {
-            return ( p_object != null ) && ( p_object instanceof IBaseGenerator ) && ( p_object.hashCode() == this.hashCode() );
+            return ( p_object != null ) && ( p_object instanceof IBenchmarkAgentGenerator ) && ( p_object.hashCode() == this.hashCode() );
         }
 
         /**
