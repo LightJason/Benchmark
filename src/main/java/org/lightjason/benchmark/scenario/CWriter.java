@@ -134,29 +134,21 @@ public final class CWriter
                                                     @Nonnull final Consumer<Map<String, Object>> p_static,
                                                     @Nonnull final Map<IBenchmarkAgentGenerator, Function<Number, Number>> p_generator )
     {
-        p_data.computeIfAbsent(
-            "configuration",
-            i ->
-            {
-                final Map<String, Object> l_configuration = new HashMap<>();
-                p_static.accept( l_configuration );
-                p_data.put( i, l_configuration );
-                return null;
-            } );
+        if ( !p_data.containsKey( "configuration" ) )
+        {
+            final Map<String, Object> l_configuration = new HashMap<>();
+            p_static.accept( l_configuration );
+            p_data.put( "configuration", l_configuration );
+        }
 
-        p_data.computeIfAbsent(
-            "scenariosize",
-            n ->
-            {
-                p_data.put(
-                    n,
+        if ( !p_data.containsKey( "scenariosize" ) )
+            p_data.put(
+                    "scenariosize",
                     IntStream.rangeClosed( 1, p_runs )
-                             .boxed()
-                             .map( i -> p_generator.entrySet().stream().collect( Collectors.toMap( j -> j.getKey().basename(), j -> j.getValue().apply( i ) ) ) )
-                             .collect( Collectors.toList() )
-                );
-                return null;
-            } );
+                            .boxed()
+                            .map( i -> p_generator.entrySet().stream().collect( Collectors.toMap( j -> j.getKey().basename(), j -> j.getValue().apply( i ) ) ) )
+                            .collect( Collectors.toList() )
+            );
 
         return p_data;
     }
