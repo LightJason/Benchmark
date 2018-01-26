@@ -32,7 +32,7 @@
         <menu name="Source Documentation">
             <item name="Source Documentation" href="sources/"/>
             <item name="Repository" href="http://github.com/LightJason/Benchmark" />
-            <item name="Docker" href="https://hub.docker.com/r/lightjason/agentspeak" />
+            <item name="Docker" href="https://hub.docker.com/r/lightjason/benchmark" />
             <item name="LightJason" href="http://lightjason.org"/>
         </menu>
     </body>
