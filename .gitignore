@@ -1,5 +1,6 @@
 *.*
 !.gitignore
+!.dockerignore
 !Dockerfile
 !circle.yml
 !pom.xml
