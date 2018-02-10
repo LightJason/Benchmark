@@ -1,4 +1,4 @@
-FROM lightjason/agentspeak
+FROM lightjason/agentspeak:latest
 
 # --- configuration section ----------------------
 ENV DOCKERIMAGE_BENCHMARK_VERSION HEAD
