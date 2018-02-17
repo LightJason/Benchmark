@@ -28,11 +28,40 @@
 .
 
 +fib( value(V), index(I) )
-    : V > 2
+    : V > 2 <-
         I++;
         X = V - 1;
         Y = V - 2;
+
         +fib( value(X), index(I) );
         +fib( value(Y), index(I) )
-    : V <= 2
-            
+
+    : V == 2 <-
+        !sum
+
+   :  V == 1 <-
+        !sum     
+.
+
++!sum(I)
+    : I > 0 <-
+        generic/print(I);
+
+        X = I - 1;
+        >>fib( value(N), index(X) );
+        Y = I - 2;
+        >>fib( value(M), index(Y) );
+        
+        >>fibsum(Z);
+        -fibsum(Z);
+        Z = Z + X + Y;
+        +fibsum(Z);
+        
+        I--;
+        !sum(I)
+
+    : I == 0 <-
+        >>fibsum(X);
+        generic/print(X)
+.
+        

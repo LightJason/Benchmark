@@ -1,5 +1,5 @@
 global:
-    runs: 15
+    runs: 1
     warmup: 5
     iterations: 3
     memorylograte: 2500
@@ -11,4 +11,5 @@ runtime:
 
 agent:
     source:
-        randomfibonacci.asl: [1, 2, 5, 10, 15, 30, 100, 200, 500, 1000, 5000, 10000, 50000, 100000, 500000]
+        fibonacci.asl: [1]
+        #fibonacci.asl: [1, 2, 5, 10, 15, 30, 100, 200, 500, 1000, 5000, 10000, 50000, 100000, 500000]
