@@ -24,11 +24,15 @@
 !main.
 
 +!main <-
-    !count( MaxCount )
+    +fib( value(5), index(0) )
 .
 
-+!count(X)
-    : X > 0 <-
-        X--;
-        !count(X)
-.
++fib( value(V), index(I) )
+    : V > 2
+        I++;
+        X = V - 1;
+        Y = V - 2;
+        +fib( value(X), index(I) );
+        +fib( value(Y), index(I) )
+    : V <= 2
+            

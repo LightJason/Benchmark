@@ -22,7 +22,7 @@ jobs:
                 command: git clean -xdf && git fetch -p && git gc --prune=now
             - run:
                 name: Execute Scenario
-                command: benchmark scenario/synchronizedcount5.yml
+                command: benchmark scenario/randomfibonacci.yml
             - store_artifacts:    
                 path: scenario/
             - run:

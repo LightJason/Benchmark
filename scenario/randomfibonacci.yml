@@ -1,0 +1,14 @@
+global:
+    runs: 15
+    warmup: 5
+    iterations: 3
+    memorylograte: 2500
+    alive: 480000
+
+runtime:
+    type: workstealing
+    neighborhood: leftright
+
+agent:
+    source:
+        randomfibonacci.asl: [1, 2, 5, 10, 15, 30, 100, 200, 500, 1000, 5000, 10000, 50000, 100000, 500000]
