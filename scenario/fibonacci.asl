@@ -24,44 +24,31 @@
 !main.
 
 +!main <-
-    +fib( value(5), index(0) )
+    +fib( value(5) )
 .
 
-+fib( value(V), index(I) )
++fib( value(V), _ )
     : V > 2 <-
-        I++;
         X = V - 1;
         Y = V - 2;
 
-        +fib( value(X), index(I) );
-        +fib( value(Y), index(I) )
+        +fib( value(X), index(V) );
+        +fib( value(Y), index(V) )
 
     : V == 2 <-
-        !sum
+        !sum(1)
 
    :  V == 1 <-
-        !sum     
+        !sum(1)
 .
 
 +!sum(I)
-    : I > 0 <-
         generic/print(I);
 
-        X = I - 1;
-        >>fib( value(N), index(X) );
-        Y = I - 2;
-        >>fib( value(M), index(Y) );
-        
-        >>fibsum(Z);
-        -fibsum(Z);
-        Z = Z + X + Y;
-        +fibsum(Z);
-        
-        I--;
-        !sum(I)
+        >>fib( value(N), index(I) );
+        -fib( value(N), index(I) )
 
-    : I == 0 <-
-        >>fibsum(X);
-        generic/print(X)
-.
+        >>fib( value(M), index(Y) );
+        -fib( value(M), index(I) )
         
+        Z = Z + X + Y;
